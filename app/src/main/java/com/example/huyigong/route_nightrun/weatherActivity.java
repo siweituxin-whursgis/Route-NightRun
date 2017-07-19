@@ -1,12 +1,14 @@
 package com.example.huyigong.route_nightrun;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -82,10 +84,19 @@ public class weatherActivity extends AppCompatActivity {
             return false;
         }
     };
-
+    Button run_outside;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_weather);
+        run_outside = (Button)findViewById(R.id.Button_night_run);
+        run_outside.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent night_running = new Intent(weatherActivity.this,Night_Running.class);
+                startActivity(night_running);
+            }
+        });
 
 
     }
