@@ -1,10 +1,12 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.huyigong.route_nightrun.running_esimate">
 
     <!-- TODO: Update blank fragment layout -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
@@ -28,7 +30,7 @@
             android:padding="5dp"
             android:text="评价"
             android:textAlignment="center"
-            android:textColor="@android:color/holo_green_light" />
+            android:textColor="@android:color/holo_blue_light" />
         <RadioButton
             android:id="@+id/running"
             android:layout_width="15dp"
@@ -75,5 +77,78 @@
             android:text="报警"
             android:textColor="@android:color/darker_gray" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
+        android:layout_marginLeft="120dp"
+        android:layout_marginTop="10dp"
+
+        app:srcCompat="@drawable/sport" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="120dp"
+
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/alllm"
+        android:drawableRight="@drawable/gotoright"
+        android:elevation="0dp"
+        android:gravity="center_horizontal|center"
+        android:text="累计路程：0.0KM"
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="20sp"
+        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="280dp"
+        android:background="@android:color/white"
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/kg"
+        android:drawableRight="@drawable/gotoright"
+        android:gravity="center_horizontal|center"
+        android:text="体重管理"
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="20sp" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="360dp"
+        android:background="@android:color/white"
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/testkg"
+        android:drawableRight="@drawable/gotoright"
+        android:gravity="center_horizontal|center"
+        android:text="今日测评"
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="270dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="200dp"
+
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/fire"
+        android:drawableRight="@drawable/gotoright"
+        android:elevation="0dp"
+        android:gravity="center_horizontal|center"
+        android:text="消耗卡路里："
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="20sp"
+        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
 </FrameLayout>
