@@ -12,20 +12,31 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
-            android:name=".weatherActivity"
+            android:name=".WeatherActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".Night_Running"
             android:label="Night Running" />
+
         <activity
             android:name=".RunningActivity"
             android:label="Running" />
+        <activity
+            android:name=".NightRunActivity">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action." />-->
+            <!--</intent-filter>-->
+        </activity>
+
     </application>
 
 </manifest>
