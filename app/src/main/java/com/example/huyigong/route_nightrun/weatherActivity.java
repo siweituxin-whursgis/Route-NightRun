@@ -20,7 +20,7 @@ public class weatherActivity extends AppCompatActivity {
         run_outside.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent night_running = new Intent(weatherActivity.this, RunningActivity.class);
+                Intent night_running = new Intent(weatherActivity.this, Night_Running.class);
                 startActivity(night_running);
             }
         });

@@ -3,11 +3,10 @@ package com.example.huyigong.route_nightrun;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.*;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 
 /**
  * A simple {@link Fragment} subclass.
