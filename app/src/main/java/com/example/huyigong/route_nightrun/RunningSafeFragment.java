@@ -3,20 +3,22 @@ package com.example.huyigong.route_nightrun;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.*;
+import android.app.Fragment;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link talk.OnFragmentInteractionListener} interface
+ * {@link RunningSafeFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link talk#newInstance} factory method to
+ * Use the {@link RunningSafeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class talk extends Fragment {
+public class RunningSafeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -28,7 +30,7 @@ public class talk extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public talk() {
+    public RunningSafeFragment() {
         // Required empty public constructor
     }
 
@@ -38,11 +40,11 @@ public class talk extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment talk.
+     * @return A new instance of fragment RunningSafeFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static talk newInstance(String param1, String param2) {
-        talk fragment = new talk();
+    public static RunningSafeFragment newInstance(String param1, String param2) {
+        RunningSafeFragment fragment = new RunningSafeFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -71,12 +73,13 @@ public class talk extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
+        // TODO: 添加监听器，此处暂时隐藏
+//        if (context instanceof OnFragmentInteractionListener) {
+//            mListener = (OnFragmentInteractionListener) context;
+//        } else {
+//            throw new RuntimeException(context.toString()
+//                    + " must implement OnFragmentInteractionListener");
+//        }
     }
 
     @Override
@@ -98,5 +101,11 @@ public class talk extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_safe, container, false);
     }
 }
