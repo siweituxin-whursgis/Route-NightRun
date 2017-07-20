@@ -50,6 +50,11 @@ public class Night_Running extends FragmentActivity implements OnClickListener {
         running = (RadioButton)findViewById(R.id.running);
         talk_RBtn = (RadioButton)findViewById(R.id.runningAppointment);
         safe_RBtn = (RadioButton)findViewById(R.id.running_safety);
+        running_esimate_r.setOnClickListener(this);
+        running.setOnClickListener(this);
+        talk_RBtn.setOnClickListener(this);
+        safe_RBtn.setOnClickListener(this);
+
 
     }
 
@@ -80,7 +85,8 @@ public class Night_Running extends FragmentActivity implements OnClickListener {
         switch (index){
             case 0 :
                 running_esimate_r.setTextColor(blue);
-               if(fg_running_esimate==null){ Fragment fragment = new running_esimate();
+               if(fg_running_esimate==null){
+                   Fragment fragment = new running_esimate();
                 transaction.add(R.id.content, fragment);}
                 else{transaction.show(fg_running_esimate);}
                 break;
@@ -123,5 +129,4 @@ public class Night_Running extends FragmentActivity implements OnClickListener {
             transaction.hide(fg_talk);
         }
 
-    }
-}
+    }}
