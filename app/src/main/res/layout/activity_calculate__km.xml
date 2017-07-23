@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.huyigong.route_nightrun.Calculate_KM">
+
+    <FrameLayout
+        android:layout_width="350dp"
+        android:layout_height="500dp"
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp">
+
+        <Button
+            android:id="@+id/textView"
+            android:layout_width="350dp"
+            android:layout_height="73dp"
+            android:layout_marginTop="10dp"
+            android:background="@android:color/transparent"
+
+            android:drawableRight="@drawable/setting"
+            android:gravity="left|center"
+            android:text="周目标设置："
+            android:textColor="@android:color/darker_gray"
+            android:textSize="20sp"
+            tools:background="@drawable/side_back"
+            tools:layout_editor_absoluteX="5dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+    </FrameLayout>
+
+</android.support.constraint.ConstraintLayout>

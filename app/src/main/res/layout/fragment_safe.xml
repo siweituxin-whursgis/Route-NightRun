@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/backg"
     tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <!-- TODO: Update blank fragment layout -->
@@ -10,7 +11,8 @@
         android:layout_height="80dp"
         android:layout_marginTop="430dp"
         android:layout_weight="1"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
 
           
@@ -90,14 +92,15 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="510dp"
+
         android:orientation="vertical"
         android:weightSum="1">
 
         <Button
             android:id="@+id/CallPolice"
             android:layout_width="350dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="20dp"
 
@@ -107,12 +110,14 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="一键报警"
-            android:textSize="22sp" />
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/schoolPolice"
             android:layout_width="350dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:background="@android:color/transparent"
             android:drawableBottom="@drawable/side"
@@ -121,11 +126,14 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="联系学校保卫部"
-            android:textSize="22sp" />
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <Button
             android:id="@+id/backTime"
             android:layout_width="350dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:background="@android:color/transparent"
             android:drawableBottom="@drawable/side"
@@ -134,24 +142,31 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="回寝提醒时间设置"
-            android:textSize="22sp" />
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <Button
             android:id="@+id/car"
             android:layout_width="350dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="20dp"
+            android:layout_weight="0.08"
             android:background="@android:color/transparent"
             android:drawableBottom="@drawable/side"
-            android:drawableLeft="@drawable/car"
 
+            android:drawableLeft="@drawable/car"
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="一键叫车"
-            android:textSize="22sp" />
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <Button
             android:id="@+id/search_friends"
             android:layout_width="350dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:background="@android:color/transparent"
             android:drawableBottom="@drawable/side"
@@ -160,7 +175,9 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="搜寻附近同伴"
-            android:textSize="22sp" />
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
 
     </LinearLayout>

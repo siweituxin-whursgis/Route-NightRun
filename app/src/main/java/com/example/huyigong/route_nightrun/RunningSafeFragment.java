@@ -1,13 +1,28 @@
 package com.example.huyigong.route_nightrun;
 
+import android.app.Activity;
+import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.app.AlarmManager;
+import android.widget.Button;
+import android.widget.TimePicker;
+import android.widget.Toast;
+
+import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+
+import java.io.Console;
+import java.util.Calendar;
 
 
 /**
@@ -34,6 +49,7 @@ public class RunningSafeFragment extends Fragment {
         // Required empty public constructor
     }
 
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -59,6 +75,8 @@ public class RunningSafeFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+
     }
 
 
@@ -106,6 +124,80 @@ public class RunningSafeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_safe, container, false);
+        View view = inflater.inflate(R.layout.fragment_safe, container, false);
+        Button callPolice = (Button) view.findViewById(R.id.CallPolice);
+        Button schoolPolice = (Button) view.findViewById(R.id.schoolPolice);
+        Button setbackTime = (Button)view.findViewById(R.id.backTime);
+
+        setbackTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar calendar=Calendar.getInstance();
+                calendar.setTimeInMillis(System.currentTimeMillis());
+                int mHour = calendar.get(Calendar.HOUR_OF_DAY);
+                int mMinute = calendar.get(Calendar.MINUTE);
+//                new TimePickerDialog (RunningSafeFragment.this,new TimePickerDialog.OnTimeSetListener(){
+//                    public void onTimeSet(TimePicker view,int hourOfDay,int miniute){
+//                        Calendar calendar=Calendar.getInstance();
+//                        calendar.setTimeInMillis(System.currentTimeMillis());
+//                        calendar.set(Calendar.HOUR_OF_DAY,hourOfDay);
+//                        calendar.set(Calendar.MINUTE,miniute);
+//                        calendar.set(Calendar.SECOND,0);
+//                        calendar.set(Calendar.MILLISECOND,0);
+//
+//                        Intent intent = new Intent();
+//
+//                    }
+//                });
+            }
+
+
+
+
+
+        });
+        schoolPolice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Intent schoolPolice = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "027-87308337"));//直接拨打电话
+//                  startActivity(dialIntent);
+                    getActivity().startActivity(schoolPolice);
+                } catch (SecurityException e) {
+                    Toast.makeText(getContext(), "拨号权限被禁用" + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        if (callPolice == null) {
+            System.out.println("callPolice is null");
+        }
+        else {
+            callPolice.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        Intent dialIntent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "110"));//直接拨打电话
+//                    startActivity(dialIntent);
+                        getActivity().startActivity(dialIntent);
+                    } catch (SecurityException e) {
+                        Toast.makeText(getContext(), "拨号权限被禁用" + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            }); callPolice.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        Intent dialIntent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + "110"));//直接拨打电话
+//                    startActivity(dialIntent);
+                        getActivity().startActivity(dialIntent);
+                    } catch (SecurityException e) {
+                        Toast.makeText(getContext(), "拨号权限被禁用" + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+        return view;
     }
+
+
 }
