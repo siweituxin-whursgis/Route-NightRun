@@ -2,7 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.huyigong.route_nightrun.running_esimate">
+    android:background="@drawable/backg"
+    tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout
@@ -10,16 +11,21 @@
         android:layout_height="80dp"
         android:layout_marginTop="430dp"
         android:layout_weight="1"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+
+          
 
         <RadioButton
             android:id="@+id/running_estimate"
 
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
 
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:checked="true"
@@ -29,12 +35,17 @@
             android:text="评价"
             android:textAlignment="center"
             android:textColor="@android:color/darker_gray" />
+
+
+          
+
         <RadioButton
             android:id="@+id/running"
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:drawableTop="@drawable/running"
@@ -48,14 +59,15 @@
         <RadioButton
             android:id="@+id/runningAppointment"
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:drawableTop="@drawable/talk"
-            android:padding="5dp"
             android:gravity="center_horizontal|bottom"
+            android:padding="5dp"
             android:text="约跑"
             android:textColor="@android:color/darker_gray" />
 
@@ -64,16 +76,110 @@
         <RadioButton
             android:id="@+id/running_safety"
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:drawableTop="@drawable/safe"
-            android:padding="5dp"
             android:gravity="center_horizontal|bottom"
+            android:padding="5dp"
             android:text="报警"
-            android:textColor="@android:color/holo_green_light" />
+            android:textColor="@android:color/darker_gray" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="510dp"
+
+        android:orientation="vertical"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/CallPolice"
+            android:layout_width="350dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="20dp"
+
+            android:background="@android:color/transparent"
+            android:drawableBottom="@drawable/side"
+            android:drawableLeft="@drawable/police"
+            android:drawableRight="@drawable/gotoright"
+            android:gravity="left|center"
+            android:text="一键报警"
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/schoolPolice"
+            android:layout_width="350dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/transparent"
+            android:drawableBottom="@drawable/side"
+            android:drawableLeft="@drawable/school"
+
+            android:drawableRight="@drawable/gotoright"
+            android:gravity="left|center"
+            android:text="联系学校保卫部"
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/backTime"
+            android:layout_width="350dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/transparent"
+            android:drawableBottom="@drawable/side"
+            android:drawableLeft="@drawable/clock"
+
+            android:drawableRight="@drawable/gotoright"
+            android:gravity="left|center"
+            android:text="回寝提醒时间设置"
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/car"
+            android:layout_width="350dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="0.08"
+            android:background="@android:color/transparent"
+            android:drawableBottom="@drawable/side"
+
+            android:drawableLeft="@drawable/car"
+            android:drawableRight="@drawable/gotoright"
+            android:gravity="left|center"
+            android:text="一键叫车"
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/search_friends"
+            android:layout_width="350dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="20dp"
+            android:background="@android:color/transparent"
+            android:drawableBottom="@drawable/side"
+            android:drawableLeft="@drawable/friends_run"
+
+            android:drawableRight="@drawable/gotoright"
+            android:gravity="left|center"
+            android:text="搜寻附近同伴"
+            android:textColor="@android:color/background_light"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+
     </LinearLayout>
 
 </FrameLayout>

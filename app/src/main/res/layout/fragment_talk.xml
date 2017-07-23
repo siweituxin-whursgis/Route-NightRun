@@ -1,8 +1,9 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.huyigong.route_nightrun.running_esimate">
+    tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout
@@ -10,16 +11,21 @@
         android:layout_height="80dp"
         android:layout_marginTop="430dp"
         android:layout_weight="1"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+
+          
 
         <RadioButton
             android:id="@+id/running_estimate"
 
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
 
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:checked="true"
@@ -29,12 +35,17 @@
             android:text="评价"
             android:textAlignment="center"
             android:textColor="@android:color/darker_gray" />
+
+
+          
+
         <RadioButton
             android:id="@+id/running"
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:drawableTop="@drawable/running"
@@ -48,32 +59,35 @@
         <RadioButton
             android:id="@+id/runningAppointment"
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:drawableTop="@drawable/talk"
-            android:padding="5dp"
             android:gravity="center_horizontal|bottom"
+            android:padding="5dp"
             android:text="约跑"
-            android:textColor="@android:color/holo_green_light" />
+            android:textColor="@android:color/darker_gray" />
 
           
 
         <RadioButton
             android:id="@+id/running_safety"
             android:layout_width="15dp"
-            android:layout_height="80dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:drawableTop="@drawable/safe"
-            android:padding="5dp"
             android:gravity="center_horizontal|bottom"
+            android:padding="5dp"
             android:text="报警"
             android:textColor="@android:color/darker_gray" />
+
     </LinearLayout>
 
 </FrameLayout>

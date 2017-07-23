@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/roadr"
-    tools:context="com.example.huyigong.route_nightrun.weatherActivity">
+    android:background="@drawable/weback"
+    tools:context="com.example.huyigong.route_nightrun.WeatherActivity">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
@@ -13,74 +13,90 @@
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
 
-    <FrameLayout
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
-
-
-        <Button
-            android:id="@+id/indoor_run"
-            android:layout_width="180dp"
-            android:layout_height="60dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="400dp"
-            android:background="@android:color/holo_green_light"
-            android:text="室内运动"
-            android:textColor="@android:color/background_light"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/date"
-            android:layout_width="200dp"
-            android:layout_height="80dp"
-            android:layout_marginLeft="240dp"
-            android:layout_marginTop="100dp"
-            android:layout_weight="1"
-            android:width="50dp"
-            android:ems="10"
-            android:inputType="date"
-            android:text="7月18日 星期二"
-            android:textColor="@android:color/background_light"
-            android:textColorLink="@android:color/primary_text_dark"
-            android:textStyle="bold"
-            tools:visibility="visible" />
-
-        <ImageView
-            android:id="@+id/image_sun"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginLeft="150dp"
-            android:layout_marginTop="100dp"
-            android:visibility="visible"
-            app:srcCompat="@drawable/sun" />
+        android:layout_margin="10dp"
+        android:orientation="vertical">
 
         <TextClock
             android:id="@+id/textClock2"
-            android:layout_width="400dp"
-            android:layout_height="50dp"
-            android:layout_marginLeft="100dp"
-            android:layout_marginRight="100dp"
-            android:layout_marginTop="40dp"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:textAlignment="center"
             android:textColor="@android:color/background_light"
             android:textSize="40sp" />
 
-        <Button
-            android:id="@+id/Button_night_run"
-            android:layout_width="180dp"
-            android:layout_height="60dp"
-            android:layout_marginLeft="200dp"
-            android:layout_marginTop="400dp"
-            android:background="@android:color/holo_green_light"
-            android:text="开始夜跑"
-            android:textColor="@android:color/background_light"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
 
+            <ImageView
+                android:id="@+id/image_sun"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0"
+                android:background="@drawable/sun"
+                android:visibility="visible"
+                app:srcCompat="@drawable/sun" />
 
-    </FrameLayout>
+            <EditText
+                android:id="@+id/date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="date"
+                android:text="7月18日 星期二"
+                android:textColor="@android:color/background_light"
+                android:textColorLink="@android:color/primary_text_dark"
+                android:textStyle="bold"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <!--<TableLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_weight="1"-->
+        <!--android:gravity="bottom"-->
+        <!--android:stretchColumns="0,1">-->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/indoor_run"
+                style="@android:style/Widget.Material.Button.Colored"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:text="室内运动"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/Button_night_run"
+                style="@android:style/Widget.Material.Button.Colored"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:text="开始夜跑"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!--</TableLayout>-->
+
+    </LinearLayout>
+
 
 </FrameLayout>
