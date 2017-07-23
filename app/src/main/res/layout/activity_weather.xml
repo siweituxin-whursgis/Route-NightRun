@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/roadr"
+    android:background="@drawable/weback"
     tools:context="com.example.huyigong.route_nightrun.WeatherActivity">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
@@ -39,6 +39,7 @@
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0"
+                android:background="@drawable/sun"
                 android:visibility="visible"
                 app:srcCompat="@drawable/sun" />
 
@@ -57,18 +58,18 @@
         </LinearLayout>
 
         <!--<TableLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_weight="1"-->
-            <!--android:gravity="bottom"-->
-            <!--android:stretchColumns="0,1">-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_weight="1"-->
+        <!--android:gravity="bottom"-->
+        <!--android:stretchColumns="0,1">-->
 
         <LinearLayout
-            android:layout_height="wrap_content"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:gravity="bottom"
             android:layout_weight="1"
+            android:gravity="bottom"
             android:orientation="horizontal">
 
             <Button

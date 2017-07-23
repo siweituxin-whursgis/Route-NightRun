@@ -9,6 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.MapView;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,6 +63,8 @@ public class RunningRunFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+
     }
 
 
@@ -103,11 +109,18 @@ public class RunningRunFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
+    private MapView mMapView;
     @Nullable
     @Override
+
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_running, container, false);
+        MapView mMapView = (MapView) view.findViewById(R.id.mapView);
+        ArcGISMap map = new ArcGISMap(Basemap.Type.TOPOGRAPHIC,113, 29, 16);
+        mMapView.setMap(map);
         return inflater.inflate(R.layout.fragment_running, container, false);
+
     }
+
 }
