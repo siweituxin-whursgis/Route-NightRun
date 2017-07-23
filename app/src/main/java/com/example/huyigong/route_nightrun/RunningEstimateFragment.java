@@ -1,6 +1,7 @@
 package com.example.huyigong.route_nightrun;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 
 /**
@@ -108,6 +110,35 @@ public class RunningEstimateFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.fragment_running_esimate, container, false);
+        View view = inflater.inflate(R.layout.fragment_running_esimate, container, false);
+        Button btn_run = (Button)view.findViewById(R.id.button_runcom);
+        btn_run.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Context temp = getActivity();
+                Intent intent_run = new Intent(temp, run_competition.class);
+                temp.startActivity(intent_run);    //这里用getActivity().startActivity(intent);
+            }
+        });
+        Button btn_estimate = (Button)view.findViewById(R.id.button_esitimate);
+        btn_estimate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Context temp = getActivity();
+                Intent intent_run = new Intent(temp, Calculate_KM.class);
+                temp.startActivity(intent_run);    //这里用getActivity().startActivity(intent);
+            }
+        });
+        Button btn_weight = (Button)view.findViewById(R.id.button_weight);
+        btn_weight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Context temp = getActivity();
+                Intent intent_weight= new Intent(temp, weight_management.class);
+                temp.startActivity(intent_weight);    //这里用getActivity().startActivity(intent);
+            }
+        });
+        return view;
+
     }
 }

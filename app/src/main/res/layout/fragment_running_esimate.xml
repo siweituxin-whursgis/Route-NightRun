@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/backg"
     tools:context="com.example.huyigong.route_nightrun.running_esimate">
 
     <!-- TODO: Update blank fragment layout -->
@@ -12,7 +13,8 @@
         android:layout_height="80dp"
         android:layout_marginTop="430dp"
         android:layout_weight="1"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
 
           
@@ -92,20 +94,69 @@
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="104dp"
-        android:layout_height="104dp"
-        android:layout_marginLeft="120dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="140dp"
         android:layout_marginTop="10dp"
 
         app:srcCompat="@drawable/sport" />
 
-    <TextView
-        android:id="@+id/textView"
+    <Button
+        android:id="@+id/button_esitimate"
         android:layout_width="270dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_marginLeft="50dp"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="280dp"
+        android:background="@android:color/transparent"
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/testkg"
+        android:drawableRight="@drawable/gotoright"
+        android:gravity="center_horizontal|center"
+        android:text="今日测评"
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="18sp"
+        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
+    <Button
+        android:id="@+id/button_runcom"
+        android:layout_width="270dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="340dp"
+        android:background="@android:color/transparent"
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/run_com"
+        android:drawableRight="@drawable/gotoright"
+        android:gravity="center_horizontal|center"
+        android:text="线上马拉松"
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="18sp"
+        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
+
+    <Button
+        android:id="@+id/button_weight"
+        android:layout_width="270dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="220dp"
+        android:background="@android:color/transparent"
+        android:drawableBottom="@drawable/side"
+        android:drawableLeft="@drawable/kg"
+        android:drawableRight="@drawable/gotoright"
+        android:gravity="center_horizontal|center"
+        android:text="体重管理"
+        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textSize="18sp"
+        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
+
+    <Button
+        android:id="@+id/button_allmeter"
+        android:layout_width="270dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="90dp"
+
+        android:background="@android:color/transparent"
         android:drawableBottom="@drawable/side"
         android:drawableLeft="@drawable/alllm"
         android:drawableRight="@drawable/gotoright"
@@ -113,46 +164,17 @@
         android:gravity="center_horizontal|center"
         android:text="累计路程：0.0KM"
         android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
-        android:textSize="20sp"
+        android:textSize="18sp"
         tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/button_cal"
         android:layout_width="270dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_marginLeft="50dp"
-        android:layout_marginTop="280dp"
-        android:background="@android:color/white"
-        android:drawableBottom="@drawable/side"
-        android:drawableLeft="@drawable/kg"
-        android:drawableRight="@drawable/gotoright"
-        android:gravity="center_horizontal|center"
-        android:text="体重管理"
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
-        android:textSize="20sp" />
+        android:layout_marginTop="150dp"
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="270dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="360dp"
-        android:background="@android:color/white"
-        android:drawableBottom="@drawable/side"
-        android:drawableLeft="@drawable/testkg"
-        android:drawableRight="@drawable/gotoright"
-        android:gravity="center_horizontal|center"
-        android:text="今日测评"
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
-        android:textSize="20sp" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="270dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="200dp"
-
+        android:background="@android:color/transparent"
         android:drawableBottom="@drawable/side"
         android:drawableLeft="@drawable/fire"
         android:drawableRight="@drawable/gotoright"
@@ -160,7 +182,7 @@
         android:gravity="center_horizontal|center"
         android:text="消耗卡路里："
         android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
-        android:textSize="20sp"
+        android:textSize="18sp"
         tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
 </FrameLayout>
