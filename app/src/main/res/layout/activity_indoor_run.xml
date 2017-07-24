@@ -8,7 +8,7 @@
 
     <FrameLayout
         android:layout_width="350dp"
-        android:layout_height="500dp"
+        android:layout_height="520dp"
         android:background="@android:color/transparent"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
@@ -16,7 +16,7 @@
         <com.esri.arcgisruntime.mapping.view.MapView
             android:id="@+id/mapView"
             android:layout_width="350dp"
-            android:layout_height="500dp"
+            android:layout_height="520dp"
             android:visibility="visible"
             tools:layout_editor_absoluteX="0dp"
             tools:layout_editor_absoluteY="0dp"></com.esri.arcgisruntime.mapping.view.MapView>
