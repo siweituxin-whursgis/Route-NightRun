@@ -1,25 +1,21 @@
 package com.example.huyigong.route_nightrun;
 
-import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.app.AlarmManager;
 import android.widget.Button;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
-import com.esri.arcgisruntime.mapping.view.MapView;
-import com.esri.arcgisruntime.mapping.ArcGISMap;
-import com.esri.arcgisruntime.mapping.Basemap;
 
 import java.io.Console;
 import java.util.Calendar;
@@ -149,12 +145,12 @@ public class RunningSafeFragment extends Fragment {
 //
 //                    }
 //                });
+
+                TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), new SetClockTimeListener(), 0, 0, true);
+
+                timePickerDialog.setTitle("选择回寝时间");
+                timePickerDialog.show();
             }
-
-
-
-
-
         });
         schoolPolice.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,5 +195,51 @@ public class RunningSafeFragment extends Fragment {
         return view;
     }
 
+    /**
+     * 时间选择控件设置时间的监听器
+     */
+    class SetClockTimeListener implements TimePickerDialog.OnTimeSetListener {
 
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(calendar.HOUR_OF_DAY, hourOfDay);
+            calendar.set(calendar.MINUTE, minute);
+            calendar.set(calendar.SECOND, 0);
+            calendar.set(calendar.MILLISECOND, 0);
+            // 提示
+//            Toast.makeText(getActivity().getApplicationContext(), "已设定" + calendar.getTime().toString() + "闹钟", Toast.LENGTH_LONG);
+            // 设定计时器
+            Intent intent = new Intent(getActivity(), AlarmReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, 0);
+            AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        }
+    }
+
+//    class AlarmAlert extends android.app.Activity {
+//        public void onCreate(Bundle SavedInstanceState) {
+//            super.onCreate(SavedInstanceState);
+//            new AlertDialog.Builder(AlarmAlert.this).setIcon(R.drawable.clock)
+//                    .setTitle("闹钟响了。。。").setMessage("快起床！！！")
+//                    .setPositiveButton("关闭", new DialogInterface.OnClickListener() {
+//
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            // TODO Auto-generated method stub
+//                            AlarmAlert.this.finish();
+//                        }
+//                    }).show();
+//        }
+//    }
+
+
+}
+
+class AlarmReceiver extends BroadcastReceiver{
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        // TODO 需要实现闹钟界面，并在此处进行调用
+        System.out.println("闹钟");
+    }
 }
