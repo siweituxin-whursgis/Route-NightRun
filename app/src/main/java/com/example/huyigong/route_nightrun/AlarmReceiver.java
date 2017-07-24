@@ -13,6 +13,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         // TODO 需要实现闹钟界面，并在此处进行调用
         System.out.println("闹钟");
         Intent alertIntent = new Intent(context, AlertActivity.class);
+        alertIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(alertIntent);
     }
 }
