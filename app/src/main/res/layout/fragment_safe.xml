@@ -105,7 +105,7 @@
             android:layout_marginTop="20dp"
 
             android:background="@android:color/transparent"
-            android:drawableBottom="@drawable/side"
+
             android:drawableLeft="@drawable/police"
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
@@ -120,7 +120,7 @@
             android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:background="@android:color/transparent"
-            android:drawableBottom="@drawable/side"
+
             android:drawableLeft="@drawable/school"
 
             android:drawableRight="@drawable/gotoright"
@@ -136,7 +136,7 @@
             android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:background="@android:color/transparent"
-            android:drawableBottom="@drawable/side"
+
             android:drawableLeft="@drawable/clock"
 
             android:drawableRight="@drawable/gotoright"
@@ -153,7 +153,7 @@
             android:layout_marginEnd="20dp"
             android:layout_weight="0.08"
             android:background="@android:color/transparent"
-            android:drawableBottom="@drawable/side"
+
 
             android:drawableLeft="@drawable/car"
             android:drawableRight="@drawable/gotoright"
@@ -169,7 +169,7 @@
             android:layout_height="60dp"
             android:layout_marginEnd="20dp"
             android:background="@android:color/transparent"
-            android:drawableBottom="@drawable/side"
+
             android:drawableLeft="@drawable/friends_run"
 
             android:drawableRight="@drawable/gotoright"

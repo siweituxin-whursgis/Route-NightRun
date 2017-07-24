@@ -24,5 +24,13 @@ public class WeatherActivity extends AppCompatActivity {
                 startActivity(night_running);
             }
         });
+
+        Button indoor_run = (Button)findViewById(R.id.indoor_run);
+        indoor_run.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                Intent gotoIndoorRunning  = new Intent(WeatherActivity.this,Indoor_run.class );
+                startActivity(gotoIndoorRunning);
+            }
+        });
     }
 }
