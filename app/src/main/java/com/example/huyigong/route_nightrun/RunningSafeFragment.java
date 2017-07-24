@@ -232,14 +232,6 @@ public class RunningSafeFragment extends Fragment {
 //                    }).show();
 //        }
 //    }
-
-
 }
 
-class AlarmReceiver extends BroadcastReceiver{
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        // TODO 需要实现闹钟界面，并在此处进行调用
-        System.out.println("闹钟");
-    }
-}
+
