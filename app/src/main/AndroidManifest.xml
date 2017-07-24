@@ -44,6 +44,11 @@
         <activity android:name=".enroll_marathon" />
         <activity android:name=".success_submit" />
         <activity android:name=".weight_management"></activity>
+
+        <receiver
+            android:name=".AlarmReceiver"
+            android:process=":remote"/>
     </application>
+
 
 </manifest>
