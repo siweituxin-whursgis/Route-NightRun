@@ -1,10 +1,14 @@
 package com.example.huyigong.route_nightrun;
 
 import android.annotation.SuppressLint;
-import android.os.Bundle;
-import android.os.Handler;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -12,7 +16,7 @@ import android.view.View;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class weatherActivity extends AppCompatActivity {
+public class AlertActivity extends AppCompatActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -83,11 +87,55 @@ public class weatherActivity extends AppCompatActivity {
         }
     };
 
+    MediaPlayer mediaPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_alert);
 
+        mVisible = true;
+        mControlsView = findViewById(R.id.fullscreen_content_controls);
+        mContentView = findViewById(R.id.fullscreen_content);
+
+
+        // Set up the user interaction to manually show or hide the system UI.
+        mContentView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggle();
+            }
+        });
+
+        // Upon interacting with UI controls, delay any scheduled hide()
+        // operations to prevent the jarring behavior of controls going away
+        // while interacting with the UI.
+//        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        // 播放铃声
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), getDefaultRingtoneUri(RingtoneManager.TYPE_RINGTONE));
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
+    }
+
+    /**
+     * 获取默认铃声
+     * @param type 类型
+     * @return 铃声
+     */
+    public Ringtone getDefaultRingtone(int type) {
+        return RingtoneManager.getRingtone(getApplicationContext(),
+                RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), type));
+    }
+
+    /**
+     * 获取默认铃声URI
+     * @param type 铃声类型
+     * @return 铃声URI
+     */
+    public Uri getDefaultRingtoneUri(int type) {
+        return RingtoneManager.getActualDefaultRingtoneUri(getApplicationContext(), type);
     }
 
     @Override
@@ -141,5 +189,11 @@ public class weatherActivity extends AppCompatActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mediaPlayer.stop();
     }
 }
