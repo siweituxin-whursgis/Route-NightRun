@@ -21,10 +21,10 @@ public class NightRunActivity extends AppCompatActivity {
         tabHost = (TabHost) findViewById(R.id.night_run_tabhost);
         tabHost.setup();
         // 创建视图
-        View view_estimate = createTabView("评估", R.drawable.test); // 评估
-        View view_run = createTabView("夜跑", R.drawable.running); // 夜跑
-        View view_talk = createTabView("约跑", R.drawable.talk); // 约跑
-        View view_safe = createTabView("报警", R.drawable.safe); // 报警
+        View view_estimate = createTabView("评估", R.drawable.tab_item_test_icon); // 评估
+        View view_run = createTabView("夜跑", R.drawable.tab_item_run_icon); // 夜跑
+        View view_talk = createTabView("约跑", R.drawable.tab_item_talk_icon); // 约跑
+        View view_safe = createTabView("报警", R.drawable.tab_item_safe_icon); // 报警
 
         tabHost.addTab(tabHost.newTabSpec("estimate").setIndicator(view_estimate).setContent(R.id.fragment_running_estimate));
         tabHost.addTab(tabHost.newTabSpec("run").setIndicator(view_run).setContent(R.id.fragment_running));
@@ -49,7 +49,7 @@ public class NightRunActivity extends AppCompatActivity {
         TextView textView = (TextView) view.findViewById(R.id.tab_item_title);
         textView.setText(title);
         ImageView imageView = (ImageView) view.findViewById(R.id.tab_item_icon);
-        imageView.setImageDrawable(getResources().getDrawable(drawableId, null));
+        imageView.setBackground(getResources().getDrawable(drawableId, null));
         return view;
     }
 }

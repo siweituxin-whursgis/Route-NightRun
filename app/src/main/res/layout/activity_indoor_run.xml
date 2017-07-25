@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.huyigong.route_nightrun.Indoor_run">
+
+    <FrameLayout
+        android:layout_width="350dp"
+        android:layout_height="500dp"
+        android:background="@android:color/transparent"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
+
+        <com.esri.arcgisruntime.mapping.view.MapView
+            android:id="@+id/mapView"
+            android:layout_width="350dp"
+            android:layout_height="500dp"
+            android:visibility="visible"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp"></com.esri.arcgisruntime.mapping.view.MapView>
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="160dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="180dp"
+            android:layout_marginTop="430dp"
+            android:background="@drawable/button"
+            android:text="室内运动场"
+            android:textColor="@android:color/background_light"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/gym"
+            android:layout_width="160dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="430dp"
+            android:background="@drawable/button"
+            android:text="健身房"
+            android:textAllCaps="false"
+            android:textColor="@android:color/background_light"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editText4"
+            android:layout_width="250dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/search"
+            android:drawableLeft="@drawable/fangdajing"
+            android:ems="10"
+            android:inputType="textPersonName"
+            tools:layout_editor_absoluteX="43dp"
+            tools:layout_editor_absoluteY="16dp" />
+
+    </FrameLayout>
+
+</android.support.constraint.ConstraintLayout>

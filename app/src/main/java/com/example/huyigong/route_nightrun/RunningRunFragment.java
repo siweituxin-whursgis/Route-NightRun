@@ -117,7 +117,7 @@ public class RunningRunFragment extends Fragment {
 //        return super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_running, container, false);
         MapView mMapView = (MapView) view.findViewById(R.id.mapView);
-        ArcGISMap map = new ArcGISMap(Basemap.Type.TOPOGRAPHIC,113, 29, 16);
+        ArcGISMap map = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP,30.527911,114.360202, 16);
         mMapView.setMap(map);
         return inflater.inflate(R.layout.fragment_running, container, false);
 
