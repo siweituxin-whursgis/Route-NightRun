@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class weatherActivity extends AppCompatActivity {
+public class WeatherActivity extends AppCompatActivity {
 
     Button run_outside;
 
@@ -20,8 +20,16 @@ public class weatherActivity extends AppCompatActivity {
         run_outside.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent night_running = new Intent(weatherActivity.this, RunningActivity.class);
+                Intent night_running = new Intent(WeatherActivity.this, NightRunActivity.class);
                 startActivity(night_running);
+            }
+        });
+
+        Button indoor_run = (Button)findViewById(R.id.indoor_run);
+        indoor_run.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                Intent gotoIndoorRunning  = new Intent(WeatherActivity.this,Indoor_run.class );
+                startActivity(gotoIndoorRunning);
             }
         });
     }
