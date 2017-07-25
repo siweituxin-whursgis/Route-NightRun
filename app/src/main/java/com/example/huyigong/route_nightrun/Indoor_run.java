@@ -5,6 +5,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -14,6 +15,7 @@ import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
@@ -38,6 +40,7 @@ public class Indoor_run extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 SimpleMarkerSymbol symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.BLUE, 12);
+
                 Point gymPt1 = new Point(114.36271, 30.523924, SpatialReferences.getWgs84());
                 Point gymPt2 = new Point(114.355965,30.526486, SpatialReferences.getWgs84());
                 Point gymPt3 = new Point(114.354347,30.526725, SpatialReferences.getWgs84());
@@ -78,6 +81,7 @@ public class Indoor_run extends AppCompatActivity {
                 Graphic graphic14= new Graphic(gymPt14, campsiteSymbol);
                 Graphic graphic15= new Graphic(gymPt15, campsiteSymbol);
 
+
                 GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
                 MapView mMapView = (MapView) findViewById(R.id.mapView);
                 ArcGISMap map = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP,30.5303,114.3547, 16);
@@ -103,6 +107,13 @@ public class Indoor_run extends AppCompatActivity {
 
 
                 mMapView.getGraphicsOverlays().add(graphicsOverlay);
+                mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(Indoor_run.this,mMapView){
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
+                        
+                        return true;
+                    }
+                });
 
             }
         });

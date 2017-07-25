@@ -22,17 +22,6 @@
             tools:layout_editor_absoluteY="0dp"></com.esri.arcgisruntime.mapping.view.MapView>
 
         <Button
-            android:id="@+id/button4"
-            android:layout_width="160dp"
-            android:layout_height="50dp"
-            android:layout_marginLeft="180dp"
-            android:layout_marginTop="430dp"
-            android:background="@drawable/button"
-            android:text="室内运动场"
-            android:textColor="@android:color/background_light"
-            android:textStyle="bold" />
-
-        <Button
             android:id="@+id/gym"
             android:layout_width="160dp"
             android:layout_height="50dp"
@@ -56,6 +45,17 @@
             android:inputType="textPersonName"
             tools:layout_editor_absoluteX="43dp"
             tools:layout_editor_absoluteY="16dp" />
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="160dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="180dp"
+            android:layout_marginTop="430dp"
+            android:background="@drawable/button"
+            android:text="室内运动场"
+            android:textColor="@android:color/background_light"
+            android:textStyle="bold" />
 
     </FrameLayout>
 
