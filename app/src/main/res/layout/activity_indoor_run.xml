@@ -23,11 +23,12 @@
 
         <Button
             android:id="@+id/gym"
-            android:layout_width="160dp"
-            android:layout_height="50dp"
-            android:layout_marginLeft="10dp"
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="30dp"
             android:layout_marginTop="430dp"
-            android:background="@drawable/button"
+            android:background="@drawable/button_db"
+            android:gravity="center"
             android:text="健身房"
             android:textAllCaps="false"
             android:textColor="@android:color/background_light"
@@ -47,13 +48,14 @@
             tools:layout_editor_absoluteY="16dp" />
 
         <Button
-            android:id="@+id/button4"
-            android:layout_width="160dp"
-            android:layout_height="50dp"
-            android:layout_marginLeft="180dp"
+            android:id="@+id/info"
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="200dp"
             android:layout_marginTop="430dp"
-            android:background="@drawable/button"
-            android:text="室内运动场"
+            android:background="@drawable/button_db"
+            android:gravity="center"
+            android:text="周边健身房详情"
             android:textColor="@android:color/background_light"
             android:textStyle="bold" />
 

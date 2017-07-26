@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backg"
+    android:background="@drawable/black_a"
     tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <!-- TODO: Update blank fragment layout -->
@@ -166,7 +166,7 @@
             android:background="#cccccc" />
 
         <Button
-            android:id="@+id/car"
+            android:id="@+id/call_car"
             android:layout_width="350dp"
             android:layout_height="60dp"
             android:layout_marginEnd="20dp"
