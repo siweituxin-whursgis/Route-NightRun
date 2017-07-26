@@ -24,6 +24,18 @@ import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -74,6 +86,8 @@ public class RunningTalkFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        // 获取最近的人
+        mNearPeopleTimer = new Timer();
     }
 
 
@@ -154,6 +168,8 @@ public class RunningTalkFragment extends Fragment {
         }
     };
 
+    Timer mNearPeopleTimer;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -190,6 +206,7 @@ public class RunningTalkFragment extends Fragment {
                 }
             }
         });
+
         return view;
     }
 
@@ -197,13 +214,38 @@ public class RunningTalkFragment extends Fragment {
     public void onPause() {
         mMapView.pause();
         super.onPause();
+        mNearPeopleTimer.cancel();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mMapView.resume();
+        mNearPeopleTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                String strURL = getResources().getString(R.string.webapi_host) + getResources().getString(R.string.webapi_nearpeople);
+                try {
+                    URL url = new URL(strURL);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+                    BufferedReader br = new BufferedReader(isr);
+                    JSONTokener jsonTokener = new JSONTokener(br.readLine());
+                    JSONArray nearPeopleArray = (JSONArray) jsonTokener.nextValue();
+                    for (int i = 0; i < nearPeopleArray.length(); i++) {
+                        JSONObject nearPerson = nearPeopleArray.getJSONObject(i);
+                        String name = nearPerson.getString("UserName");
+                        double lat = nearPerson.getDouble("PositionLat");
+                        double lng = nearPerson.getDouble("PositionLng");
 
+                    }
+                } catch (MalformedURLException me) {
+
+                } catch (Exception e) {
+
+                }
+            }
+        }, 0, 10000);
     }
 
     Location getLocation() {
@@ -225,4 +267,6 @@ public class RunningTalkFragment extends Fragment {
             return null;
         }
     }
+
+
 }
