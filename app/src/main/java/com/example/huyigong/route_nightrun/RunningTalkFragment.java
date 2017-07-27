@@ -1,13 +1,28 @@
 package com.example.huyigong.route_nightrun;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.SpatialReferences;
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.Graphic;
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
+import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 
 
 /**
@@ -103,9 +118,111 @@ public class RunningTalkFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    MapView mMapView;   // 地图
+    ArcGISMap mArcGISMap;
+    Graphic mCurPointGraphic; // 当前点
+    PictureMarkerSymbol mPinSymbol;
+    GraphicsOverlay mGraphicsOverlay;
+    LocationManager mLocationManager; // 定位服务
+    LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (location != null) {
+                Point pinPoint = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
+                mMapView.setViewpointCenterAsync(pinPoint);
+                if (mCurPointGraphic != null) {
+                    mCurPointGraphic.setGeometry(pinPoint);
+                }
+            } else {
+                Toast.makeText(getContext(), "位置获取出错", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_talk, container, false);
+        View view = inflater.inflate(R.layout.fragment_talk, container, false);
+        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
+        } catch (SecurityException se) {
+            Toast.makeText(getContext(), "未开启定位权限", Toast.LENGTH_SHORT).show();
+        }
+        mMapView = (MapView) view.findViewById(R.id.talk_map_view);
+        mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
+        mGraphicsOverlay = new GraphicsOverlay();
+        mMapView.getGraphicsOverlays().add(mGraphicsOverlay);
+        mMapView.setMap(mArcGISMap);
+        // 添加当前点
+        BitmapDrawable pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.boy);
+        mPinSymbol = new PictureMarkerSymbol(pinBitmap);
+        mPinSymbol.setHeight(40);
+        mPinSymbol.setWidth(40);
+        mPinSymbol.loadAsync();
+        mPinSymbol.addDoneLoadingListener(new Runnable() {
+            @Override
+            public void run() {
+                Location location = getLocation();
+                if (location != null) {
+                    Point pinPoint = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
+                    mMapView.setViewpointCenterAsync(pinPoint);
+                    mCurPointGraphic = new Graphic(pinPoint, mPinSymbol);
+                    mGraphicsOverlay.getGraphics().add(mCurPointGraphic);
+                } else {
+                    Toast.makeText(getContext(), "无法获取位置", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        return view;
+    }
+
+    @Override
+    public void onPause() {
+        mMapView.pause();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mMapView.resume();
+
+    }
+
+    Location getLocation() {
+        Location location;
+        try {
+            if ((mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) && (location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)) != null) {
+                return location;
+            } else if ((location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)) != null) {
+                return  location;
+            } else {
+                return null;
+            }
+        } catch (SecurityException se) {
+            Toast.makeText(getContext(), "未开启定位权限" + se.getMessage(), Toast.LENGTH_LONG).show();
+            return null;
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "其他错误" + e.getMessage(), Toast.LENGTH_LONG).show();
+//            System.out.println(e.getMessage());
+            return null;
+        }
     }
 }

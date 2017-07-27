@@ -124,7 +124,15 @@ public class RunningSafeFragment extends Fragment {
         Button callPolice = (Button) view.findViewById(R.id.CallPolice);
         Button schoolPolice = (Button) view.findViewById(R.id.schoolPolice);
         Button setbackTime = (Button)view.findViewById(R.id.backTime);
+        final Button call_taxi = (Button)view.findViewById(R.id.call_car);
+        call_taxi.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Intent intent_calltaxi = new Intent(getActivity(),Call_Taxi.class);
+                startActivity(intent_calltaxi);
 
+            }
+        });
         setbackTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

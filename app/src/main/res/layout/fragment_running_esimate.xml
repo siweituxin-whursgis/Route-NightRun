@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backg"
+    android:background="@drawable/black_a"
     tools:context="com.example.huyigong.route_nightrun.running_esimate">
 
     <!-- TODO: Update blank fragment layout -->
@@ -101,36 +101,36 @@
 
         app:srcCompat="@drawable/sport" />
 
-    <Button
-        android:id="@+id/button_esitimate"
+    <View
         android:layout_width="270dp"
-        android:layout_height="60dp"
+        android:layout_height="0.5dip"
         android:layout_marginLeft="50dp"
-        android:layout_marginTop="280dp"
-        android:background="@android:color/transparent"
+        android:layout_marginTop="150dp"
+        android:background="#cccccc" />
 
-        android:drawableLeft="@drawable/testkg"
-        android:drawableRight="@drawable/gotoright"
-        android:gravity="center_horizontal|center"
-        android:text="今日测评"
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
-        android:textSize="18sp"
-        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
+    <View
+        android:id="@+id/view4"
+        android:layout_width="270dp"
+        android:layout_height="0.5dip"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="90dp"
+        android:background="#cccccc" />
 
     <Button
         android:id="@+id/button_runcom"
         android:layout_width="270dp"
         android:layout_height="60dp"
         android:layout_marginLeft="50dp"
-        android:layout_marginTop="340dp"
+        android:layout_marginTop="330dp"
         android:background="@android:color/transparent"
 
         android:drawableLeft="@drawable/run_com"
         android:drawableRight="@drawable/gotoright"
         android:gravity="center_horizontal|center"
         android:text="线上马拉松"
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textColor="@android:color/background_light"
         android:textSize="18sp"
+        android:textStyle="bold"
         tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
     <Button
@@ -138,15 +138,16 @@
         android:layout_width="270dp"
         android:layout_height="60dp"
         android:layout_marginLeft="50dp"
-        android:layout_marginTop="220dp"
+        android:layout_marginTop="210dp"
         android:background="@android:color/transparent"
 
         android:drawableLeft="@drawable/kg"
         android:drawableRight="@drawable/gotoright"
         android:gravity="center_horizontal|center"
         android:text="体重管理"
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textColor="@android:color/background_light"
         android:textSize="18sp"
+        android:textStyle="bold"
         tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
     <Button
@@ -163,9 +164,9 @@
         android:elevation="0dp"
         android:gravity="center_horizontal|center"
         android:text="累计路程：0.0KM"
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textColor="@android:color/background_light"
         android:textSize="18sp"
-        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/button_cal"
@@ -181,8 +182,58 @@
         android:elevation="0dp"
         android:gravity="center_horizontal|center"
         android:text="消耗卡路里："
-        android:textColor="?android:attr/textColorSecondaryInverseNoDisable"
+        android:textColor="@android:color/background_light"
         android:textSize="18sp"
+        android:textStyle="bold"
+        tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
+
+    <View
+        android:id="@+id/view3"
+        android:layout_width="270dp"
+        android:layout_height="0.5dip"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="330dp"
+        android:background="#cccccc" />
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="270dp"
+        android:layout_height="0.5dip"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="270dp"
+        android:background="#cccccc" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="270dp"
+        android:layout_height="0.5dip"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="210dp"
+        android:background="#cccccc" />
+
+    <View
+        android:id="@+id/view5"
+        android:layout_width="270dp"
+        android:layout_height="0.5dip"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="390dp"
+        android:background="#cccccc" />
+
+    <Button
+        android:id="@+id/button_esitimate"
+        android:layout_width="270dp"
+        android:layout_height="60dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginTop="270dp"
+        android:background="@android:color/transparent"
+
+        android:drawableLeft="@drawable/testkg"
+        android:drawableRight="@drawable/gotoright"
+        android:gravity="center_horizontal|center"
+        android:text="今日测评"
+        android:textColor="@android:color/background_light"
+        android:textSize="18sp"
+        android:textStyle="bold"
         tools:textColor="?android:attr/textColorSecondaryInverseNoDisable" />
 
 </FrameLayout>
