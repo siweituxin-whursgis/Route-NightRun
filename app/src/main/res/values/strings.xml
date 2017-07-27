@@ -34,5 +34,6 @@
     <string name="section_format">Hello World from section: %1$d</string>
 
     <string name="webapi_host">http://139.129.166.245:4521/</string>
+    <string name="webapi_root">api/</string>
     <string name="webapi_nearpeople">nearpeople/</string>
 </resources>
