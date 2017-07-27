@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.huyigong.route_nightrun.Call_Taxi">
+
+    <FrameLayout
+        android:layout_width="344dp"
+        android:layout_height="506dp"
+        android:layout_marginTop="210dp"
+        tools:layout_editor_absoluteX="12dp"
+        tools:layout_editor_absoluteY="2dp">
+
+        <EditText
+            android:id="@+id/editText7"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="150dp"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="您的地点：武汉大学南门"
+            android:textColor="@android:color/darker_gray" />
+
+        <Spinner
+            android:id="@+id/car_cate"
+            android:layout_width="300dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="50dp"
+            android:entries="@array/cars" />
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            app:srcCompat="@drawable/people" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:layout_marginTop="50dp"
+            android:background="#cccccc" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="90dp"
+            android:text='"最快6分钟到达您身边"'
+            android:gravity="center"
+            android:textAlignment="center" />
+
+        <EditText
+            android:id="@+id/editText6"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="210dp"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="您要去哪儿：武汉大学信息学部二舍"
+            android:textColor="@android:color/darker_gray" />
+
+        <Button
+            android:id="@+id/taxi_coming"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="300dp"
+            android:background="@android:color/holo_blue_dark"
+            android:text="呼叫快车"
+            android:textColor="@android:color/background_light"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+
+    </FrameLayout>
+
+</android.support.constraint.ConstraintLayout>
