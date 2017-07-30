@@ -3,9 +3,10 @@
     android:layout_gravity="center_horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
+
+    android:padding="5dp"
     android:orientation="vertical"
-    android:background="@drawable/tab_item_ripple">
+    android:background="@color/Darkblue">
 
     <ImageView
         android:id="@+id/tab_item_icon"

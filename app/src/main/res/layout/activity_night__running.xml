@@ -32,6 +32,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@color/Darkblue"
                     android:button="@android:color/transparent"
                     android:checked="true"
                     android:drawablePadding="2dp"
@@ -39,43 +40,47 @@
                     android:padding="5dp"
                     android:text="评价"
                     android:textAlignment="center"
-                    android:textColor="@android:color/darker_gray" />
+                    android:textColor="@android:color/background_light" />
                   
+
                 <RadioButton
                     android:id="@+id/running"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@color/Darkblue"
                     android:button="@android:color/transparent"
                     android:drawableTop="@drawable/running"
                     android:gravity="center_horizontal|bottom"
                     android:padding="5dp"
                     android:text="夜跑"
-                    android:textColor="@android:color/darker_gray" />
+                    android:textColor="@android:color/background_light" />
 
                 <RadioButton
                     android:id="@+id/runningAppointment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@color/Darkblue"
                     android:button="@android:color/transparent"
                     android:drawableTop="@drawable/talk"
-                    android:padding="5dp"
                     android:gravity="center_horizontal|bottom"
+                    android:padding="5dp"
                     android:text="约跑"
-                    android:textColor="@android:color/darker_gray" />
+                    android:textColor="@android:color/background_light" />
 
                 <RadioButton
                     android:id="@+id/running_safety"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@color/Darkblue"
                     android:button="@android:color/transparent"
                     android:drawableTop="@drawable/safe"
-                    android:padding="5dp"
                     android:gravity="center_horizontal|bottom"
+                    android:padding="5dp"
                     android:text="报警"
-                    android:textColor="@android:color/darker_gray" />
+                    android:textColor="@android:color/background_light" />
 
             </RadioGroup>
 

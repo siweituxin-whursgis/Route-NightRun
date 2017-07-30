@@ -52,15 +52,21 @@
             android:name=".AlarmReceiver"
             android:process=":remote" />
 
+
         <activity
             android:name=".LoginActivity"
-            android:label="@string/title_activity_login">
+            android:label="夜跑小助手">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".GymInfo" />
+        <activity android:name=".Call_Taxi" />
+        <activity android:name=".taxi_coming"></activity>
+
     </application>
 
 </manifest>
