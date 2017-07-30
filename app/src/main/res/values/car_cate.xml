@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="cars">
+        <item>快车</item>
+        <item>出租车</item>
+        <item>顺风车</item>
+        <item>代驾</item>
+    </string-array>
+
+</resources>

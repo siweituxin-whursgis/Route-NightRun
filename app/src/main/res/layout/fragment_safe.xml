@@ -1,8 +1,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/backg"
+    android:background="@drawable/black_a"
     tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <!-- TODO: Update blank fragment layout -->
@@ -94,15 +95,21 @@
         android:layout_width="match_parent"
         android:layout_height="510dp"
 
+        android:layout_marginTop="0dp"
         android:orientation="vertical"
         android:weightSum="1">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:background="#cccccc" />
 
         <Button
             android:id="@+id/CallPolice"
             android:layout_width="350dp"
             android:layout_height="60dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="0dp"
 
             android:background="@android:color/transparent"
 
@@ -110,9 +117,13 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="一键报警"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:background="#cccccc" />
 
         <Button
             android:id="@+id/schoolPolice"
@@ -126,9 +137,13 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="联系学校保卫部"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:background="#cccccc" />
 
         <Button
             android:id="@+id/backTime"
@@ -142,12 +157,16 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="回寝提醒时间设置"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:background="#cccccc" />
 
         <Button
-            android:id="@+id/car"
+            android:id="@+id/call_car"
             android:layout_width="350dp"
             android:layout_height="60dp"
             android:layout_marginEnd="20dp"
@@ -159,9 +178,13 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="一键叫车"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:background="#cccccc" />
 
         <Button
             android:id="@+id/search_friends"
@@ -175,9 +198,19 @@
             android:drawableRight="@drawable/gotoright"
             android:gravity="left|center"
             android:text="搜寻附近同伴"
-            android:textColor="@android:color/background_light"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dip"
+            android:background="#cccccc" />
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            app:srcCompat="@drawable/schoolbus" />
 
 
     </LinearLayout>

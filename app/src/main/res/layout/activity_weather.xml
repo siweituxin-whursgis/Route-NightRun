@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/back_d"
+    android:background="@drawable/black_a"
     tools:context="com.example.huyigong.route_nightrun.WeatherActivity">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
@@ -75,11 +75,11 @@
             <Button
                 android:id="@+id/indoor_run"
                 style="@android:style/Widget.Material.Button.Colored"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_width="80dp"
+                android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:layout_weight="1"
-                android:background="@drawable/button"
+                android:background="@drawable/button_db"
                 android:gravity="center"
                 android:text="室内运动"
                 android:textSize="19sp"
@@ -88,11 +88,11 @@
             <Button
                 android:id="@+id/Button_night_run"
                 style="@android:style/Widget.Material.Button.Colored"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_width="80dp"
+                android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:layout_weight="1"
-                android:background="@drawable/button"
+                android:background="@drawable/button_db"
                 android:text="开始夜跑"
                 android:textSize="19sp"
                 android:textStyle="bold" />
