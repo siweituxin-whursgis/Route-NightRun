@@ -16,11 +16,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
-import com.esri.arcgisruntime.data.ArcGISFeature;
 import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.FeatureCollection;
 import com.esri.arcgisruntime.data.FeatureCollectionTable;
@@ -35,18 +35,14 @@ import com.esri.arcgisruntime.layers.FeatureCollectionLayer;
 import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
-import com.esri.arcgisruntime.mapping.popup.Popup;
-import com.esri.arcgisruntime.mapping.popup.PopupDefinition;
 import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
-import com.esri.arcgisruntime.symbology.Renderer;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
-import com.esri.arcgisruntime.symbology.Symbol;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,12 +50,12 @@ import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -269,14 +265,37 @@ public class RunningTalkFragment extends Fragment {
                         try {
                             FeatureQueryResult result = future.get();
                             Iterator<Feature> iterator = result.iterator();
-                            Feature feature;
+
                             while (iterator.hasNext()) {
-                                feature = iterator.next();
+                                final Feature feature = iterator.next();
                                 Callout callout = mMapView.getCallout();
                                 callout.setLocation((Point) feature.getGeometry());
                                 View calloutView = inflater.inflate(R.layout.near_people_callout_layout, null);
                                 TextView textViewName = (TextView) calloutView.findViewById(R.id.near_people_name);
                                 textViewName.setText((String) feature.getAttributes().get("UserName"));
+                                Button button = (Button) calloutView.findViewById(R.id.near_people_call_it);
+                                button.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        String strURL = NEAR_PEOPLE_CALL + "?UserName=" + (String) feature.getAttributes().get("UserName");
+                                        try {
+                                            URL url = new URL(strURL);
+                                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                            InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+                                            BufferedReader br = new BufferedReader(isr);
+                                            JSONTokener jsonTokener = new JSONTokener(br.readLine());
+                                            JSONObject root = (JSONObject) jsonTokener.nextValue();
+                                            int statusCode = root.getInt("Status");
+                                            if (statusCode == 1) {
+                                                Toast.makeText(getContext(), "已发送请求", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(getContext(), "发送请求失败", Toast.LENGTH_SHORT).show();
+                                            }
+                                        } catch (Exception e) {
+                                            Toast.makeText(getContext(), "发送请求失败", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
                                 callout.setContent(calloutView);
                                 callout.show();
                             }
@@ -302,6 +321,13 @@ public class RunningTalkFragment extends Fragment {
         mNearPeopleTimer.cancel();
     }
 
+    final String NEAR_PEOPLE_SEARCH = getResources().getString(R.string.webapi_host)
+            + getResources().getString(R.string.webapi_root)
+            + getResources().getString(R.string.webapi_nearpeople);  // 查找附近的人
+    final String NEAR_PEOPLE_CALL = getResources().getString(R.string.webapi_host)
+            + getResources().getString(R.string.webapi_root)
+            + getResources().getString(R.string.webapi_nearpeople);; // 呼叫附近的人
+
     @Override
     public void onResume() {
         super.onResume();
@@ -311,12 +337,9 @@ public class RunningTalkFragment extends Fragment {
             @Override
             public void run() {
                 try {
-                    String NEAR_PEOPLE_URL = getResources().getString(R.string.webapi_host)
-                            + getResources().getString(R.string.webapi_root)
-                            + getResources().getString(R.string.webapi_nearpeople)
-                            + "?UserID=1";
                     FeatureCollectionTable table = mFeatureCollectionLayer.getFeatureCollection().getTables().get(NEAR_PEOPLE_TABLE_INDEX);
-                    URL url = new URL(NEAR_PEOPLE_URL);
+                    String strURL = NEAR_PEOPLE_SEARCH + "?UserID=1";
+                    URL url = new URL(strURL);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     InputStreamReader isr = new InputStreamReader(connection.getInputStream());
                     BufferedReader br = new BufferedReader(isr);
@@ -330,7 +353,6 @@ public class RunningTalkFragment extends Fragment {
                         Feature feature = table.createFeature();
                         feature.setGeometry(new Point(lng, lat));
                         feature.getAttributes().put("UserName", name);
-
                         table.addFeatureAsync(feature);
                     }
                 } catch (MalformedURLException me) {
