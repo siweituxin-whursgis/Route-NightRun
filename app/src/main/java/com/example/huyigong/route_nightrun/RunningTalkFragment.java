@@ -109,6 +109,12 @@ public class RunningTalkFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        NEAR_PEOPLE_SEARCH = getResources().getString(R.string.webapi_host)
+                + getResources().getString(R.string.webapi_root)
+                + getResources().getString(R.string.webapi_nearpeople);
+        NEAR_PEOPLE_CALL = getResources().getString(R.string.webapi_host)
+                + getResources().getString(R.string.webapi_root)
+                + getResources().getString(R.string.webapi_nearpeoplecall);
         // 创建地图
         mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
         mGraphicsOverlay = new GraphicsOverlay();
@@ -321,12 +327,8 @@ public class RunningTalkFragment extends Fragment {
         mNearPeopleTimer.cancel();
     }
 
-    final String NEAR_PEOPLE_SEARCH = getResources().getString(R.string.webapi_host)
-            + getResources().getString(R.string.webapi_root)
-            + getResources().getString(R.string.webapi_nearpeople);  // 查找附近的人
-    final String NEAR_PEOPLE_CALL = getResources().getString(R.string.webapi_host)
-            + getResources().getString(R.string.webapi_root)
-            + getResources().getString(R.string.webapi_nearpeople);; // 呼叫附近的人
+    static String NEAR_PEOPLE_SEARCH;  // 查找附近的人
+    static String NEAR_PEOPLE_CALL; // 呼叫附近的人
 
     @Override
     public void onResume() {
