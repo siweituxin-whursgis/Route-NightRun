@@ -3,9 +3,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.JsonToken;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,37 +30,49 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class WeatherActivity extends AppCompatActivity {
-
     Button run_outside;
+    Handler mWeatherHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
-        JSONObject infojson = WeatherApi.getRainStateJson();
+        final TextView city = (TextView) findViewById(R.id.city);
+        final TextView temp = (TextView) findViewById(R.id.temp);
+        final TextView wet = (TextView)findViewById(R.id.wet);
 
-        TextView city = (TextView) findViewById(R.id.city);
-        TextView temp = (TextView) findViewById(R.id.temp);
-        TextView wet = (TextView)findViewById(R.id.wet);
-        try {
-            city.append(infojson.getString("city"));
-            temp.setText(infojson.getInt("temp")+"°C");
-            wet.append(infojson.getString("SD"));
-            int ifrain = infojson.getInt("rain");
-            TextView accom = (TextView)findViewById(R.id.accom);
-            TextView wea = (TextView)findViewById(R.id.weather);
-            if(ifrain==0){
-                accom.append("室外夜跑");
-                wea.setText("多云");
+        mWeatherHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                Bundle bundle = msg.getData();
+                if (bundle == null) {
+                    Log.i("获取天气失败", "数据为空");
+                    return;
+                }
+                try {
+                    city.append(bundle.getString("city"));
+                    temp.setText(bundle.getInt("temp")+"°C");
+                    wet.append(bundle.getString("SD"));
+                    int ifrain = bundle.getInt("rain");
+                    TextView accom = (TextView)findViewById(R.id.accom);
+                    TextView wea = (TextView)findViewById(R.id.weather);
+                    if(ifrain == 0){
+                        accom.append("室外夜跑");
+                        wea.setText("多云");
+                    }
+                    else{
+                        accom.append("室内健身");
+                        wea.setText("有雨");
+                    }
+                } catch (Exception e) {
+                    System.out.println("获取天气失败：" + e.getMessage());
+                }
             }
-            else{
-                accom.append("室内健身");
-                wea.setText("有雨");
-            }
-        } catch (Exception e) {
-            System.out.println("获取天气失败");
+        };
 
-        }
+        WeatherApi weatherApi = new WeatherApi(mWeatherHandler);
+        weatherApi.run();
+
         // 添加其他元素
         run_outside = (Button)findViewById(R.id.Button_night_run);
         run_outside.setOnClickListener(new View.OnClickListener() {

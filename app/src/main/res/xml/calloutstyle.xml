@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <calloutViewStyles>
+        titleTextColor="#000000"
+        titleTextSize=12
+        titleTextStyle=0
+        titleTextTypeFace=0
+        backgroundColor="#FFFFFF"
+        backgroundAlpha=200
+        frameColor="#cccccc"
+        flat=true
+        style.getCornerCurve()="2"
+        anchor="5"
+    </calloutViewStyles>
+</resources>
