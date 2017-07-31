@@ -3,8 +3,14 @@ package com.example.huyigong.route_nightrun;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.JsonToken;
 import android.view.View;
 import android.widget.Button;
+
+import com.example.huyigong.route_nightrun.helpers.WeatherApi;
+import com.google.gson.JsonObject;
+
+import org.json.JSONObject;
 
 public class WeatherActivity extends AppCompatActivity {
 
@@ -14,7 +20,7 @@ public class WeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
-
+        //JSONObject info = WeatherApi.getRainState();
         // 添加其他元素
         run_outside = (Button)findViewById(R.id.Button_night_run);
         run_outside.setOnClickListener(new View.OnClickListener() {

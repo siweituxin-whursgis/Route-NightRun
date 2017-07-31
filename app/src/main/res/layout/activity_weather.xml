@@ -29,6 +29,8 @@
             android:textColor="@android:color/background_light"
             android:textSize="40sp" />
 
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -57,6 +59,80 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="20dp"
+            android:layout_weight="0"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/city"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="70dp"
+                android:layout_weight="0.38"
+                android:ems="10"
+                android:gravity="center"
+                android:inputType="textPersonName"
+                android:text="当前定位城市："
+                android:textAlignment="center"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/temp"
+                android:layout_width="200dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="70dp"
+                android:layout_weight="0.38"
+                android:gravity="center"
+                android:text="28°C"
+                android:textAlignment="center"
+                android:textColor="@android:color/background_light"
+                android:textSize="36sp" />
+
+            <TextView
+                android:id="@+id/weather"
+                android:layout_width="200dp"
+                android:layout_height="5dp"
+                android:layout_marginLeft="70dp"
+                android:layout_weight="0.38"
+                android:gravity="center"
+                android:text="多云"
+                android:textAlignment="center"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/wet"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="70dp"
+                android:layout_weight="0.38"
+                android:gravity="center"
+                android:text="风向：西南风 湿度："
+                android:textAlignment="center"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/accom"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="70dp"
+                android:layout_weight="0.38"
+                android:gravity="center"
+                android:text="推荐："
+                android:textAlignment="center"
+                android:textColor="@android:color/background_light"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
         <!--<TableLayout-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="wrap_content"-->
