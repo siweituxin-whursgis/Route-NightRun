@@ -27,7 +27,7 @@ public class WeatherApi {
             InputStreamReader isr = new InputStreamReader(connection.getInputStream());
             BufferedReader br = new BufferedReader(isr);
             JSONTokener jsonTokener = new JSONTokener(br.readLine());
-            JSONObject root = (JSONObject) jsonTokener.nextValue();
+            JSONObject root = ((JSONObject) jsonTokener.nextValue()).getJSONObject("weatherinfo");
             return root.getInt("rain");
         } catch (Exception e) {
             System.out.println("获取天气失败");
@@ -46,7 +46,7 @@ public class WeatherApi {
             InputStreamReader isr = new InputStreamReader(connection.getInputStream());
             BufferedReader br = new BufferedReader(isr);
             JSONTokener jsonTokener = new JSONTokener(br.readLine());
-            return  (JSONObject) jsonTokener.nextValue();
+            return ((JSONObject) jsonTokener.nextValue()).getJSONObject("weatherinfo");
         } catch (Exception e) {
             System.out.println("获取天气失败");
             return null;
