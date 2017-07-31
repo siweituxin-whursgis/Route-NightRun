@@ -6,27 +6,38 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
+import com.esri.arcgisruntime.data.Feature;
+import com.esri.arcgisruntime.data.FeatureQueryResult;
+import com.esri.arcgisruntime.data.QueryParameters;
+import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
+import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.Viewpoint;
 import com.esri.arcgisruntime.mapping.popup.Popup;
 import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
+import com.esri.arcgisruntime.mapping.view.IdentifyGraphicsOverlayResult;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSceneSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 
+import java.util.Iterator;
 
 
 public class Indoor_run extends AppCompatActivity {
@@ -36,7 +47,7 @@ public class Indoor_run extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_indoor_run);
        final MapView mMapView = (MapView) findViewById(R.id.mapView);
-        ArcGISMap map = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP,30.5303,114.3547, 16);
+        final ArcGISMap map = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP,30.5303,114.3547, 14);
         mMapView.setMap(map);
         Button gym_info = (Button)findViewById(R.id.info);
         gym_info.setOnClickListener(new  View.OnClickListener(){
@@ -55,21 +66,6 @@ public class Indoor_run extends AppCompatActivity {
             public void onClick(View v) {
                 SimpleMarkerSymbol symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.BLUE, 12);
 
-//                Point gymPt1 = new Point( 114.36271, 30.523924, SpatialReferences.getWgs84());
-//                Point gymPt2 = new Point( 114.355965,30.526486, SpatialReferences.getWgs84());
-//                Point gymPt3 = new Point( 114.354347,30.526725, SpatialReferences.getWgs84());
-//                Point gymPt4 = new Point( 114.354282,30.527035, SpatialReferences.getWgs84());
-//                Point gymPt5 = new Point( 114.354149,30.526823, SpatialReferences.getWgs84());
-//                Point gymPt6 = new Point( 114.354313,30.525823, SpatialReferences.getWgs84());
-//                Point gymPt7 = new Point( 114.35427,30.525883, SpatialReferences.getWgs84());
-//                Point gymPt8 = new Point( 114.355221,30.524623, SpatialReferences.getWgs84());
-//                Point gymPt9 = new Point( 114.354034,30.529648, SpatialReferences.getWgs84());
-//                Point gymPt10 = new Point(114.353956,30.529826, SpatialReferences.getWgs84());
-//                Point gymPt11 = new Point(114.349833,30.528244, SpatialReferences.getWgs84());
-//                Point gymPt12= new Point( 114.34904,30.528371, SpatialReferences.getWgs84());
-//                Point gymPt13 = new Point(114.373353,30.532449, SpatialReferences.getWgs84());
-//                Point gymPt14 = new Point(114.374725,30.528779, SpatialReferences.getWgs84());
-//                Point gymPt15 = new Point(114.375398,30.529055, SpatialReferences.getWgs84());
                final Point gymPt1 = new Point( 114.35718503343882, 30.52625513686283 , SpatialReferences.getWgs84());
                 final Point gymPt2 = new Point( 114.35044813881815, 30.52882666083795 , SpatialReferences.getWgs84());
                 final Point gymPt3 = new Point( 114.34883228396752, 30.52906821858169 , SpatialReferences.getWgs84());
@@ -111,7 +107,7 @@ public class Indoor_run extends AppCompatActivity {
                 Graphic graphic15= new Graphic(gymPt15, campsiteSymbol);
 
 
-                GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
+                final GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
 
                 graphicsOverlay.getGraphics().add(graphic1);
                 graphicsOverlay.getGraphics().add(graphic2);
@@ -128,24 +124,34 @@ public class Indoor_run extends AppCompatActivity {
                 graphicsOverlay.getGraphics().add(graphic13);
                 graphicsOverlay.getGraphics().add(graphic14);
                 graphicsOverlay.getGraphics().add(graphic15);
-
-
-
-
-
                 mMapView.getGraphicsOverlays().add(graphicsOverlay);
                 mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(Indoor_run.this,mMapView){
                     @Override
-                    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
-                        TextView callOutContent  = new TextView(getApplicationContext());
-                        callOutContent.setTextColor(Color.BLUE);
-                        callOutContent.setText("X:"+(String.format("%.8f",gymPt1.getX()))+ ", y:" + (String.format("%.8f", gymPt1.getY())));
-                        Callout mCallout = mMapView.getCallout();
-                        mCallout.setLocation(gymPt1);
-                        mCallout.setContent(callOutContent);
-                        mCallout.show();
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        android.graphics.Point clickPoint = new android.graphics.Point(Math.round(e.getX()), Math.round(e.getY()));
+                        final ListenableFuture<IdentifyGraphicsOverlayResult> future = mMapView.identifyGraphicsOverlayAsync(graphicsOverlay, clickPoint, 10.0, false, 2);
+                        future.addDoneListener(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    IdentifyGraphicsOverlayResult result = future.get();
+                                    Iterator<Graphic> iterator = result.getGraphics().iterator();
+                                    Graphic graphic;
+                                    while (iterator.hasNext()) {
+                                        graphic = iterator.next();
+                                        Callout callout = mMapView.getCallout();
+                                        callout.setLocation((Point) graphic.getGeometry());
+                                        View calloutView ;
 
-                        return true;
+                                       // callout.setContent(calloutView);
+                                        callout.show();
+                                    }
+                                } catch (Exception e) {
+                                    Log.e(getResources().getString(R.string.app_name), "Select feature Failed: " + e.getMessage());
+                                }
+                            }
+                        });
+                        return super.onSingleTapConfirmed(e);
                     }
                 });
 
