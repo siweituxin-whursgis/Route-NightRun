@@ -325,24 +325,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             try {
-//                URL url = new URL(USER_LOGIN_URL);
-//                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//                connection.setRequestMethod("POST");
-//                connection.setDoOutput(true);
-//                JSONObject data = new JSONObject();
-//                data.put("UserName", mUserName);
-//                data.put("Password", mPassword);
-//                connection.setRequestProperty("Content-Length", String.valueOf(data.toString().length()));
-//                connection.setRequestProperty("Content-Type", "text/json; charset=UTF-8");
-//                connection.getOutputStream().write(data.toString().getBytes());
-//                InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-//                BufferedReader br = new BufferedReader(isr);
-//                JSONTokener jsonTokener = new JSONTokener(br.readLine());
-//                JSONObject root = (JSONObject) jsonTokener.nextValue();
-//                if (root.getBoolean("result")) {
-//                    return true;
-//                }
-                return true;
+                URL url = new URL(USER_LOGIN_URL);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                JSONObject data = new JSONObject();
+                data.put("UserName", mUserName);
+                data.put("Password", mPassword);
+                connection.setRequestProperty("Content-Length", String.valueOf(data.toString().length()));
+                connection.setRequestProperty("Content-Type", "text/json; charset=UTF-8");
+                connection.getOutputStream().write(data.toString().getBytes());
+                InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+                BufferedReader br = new BufferedReader(isr);
+                JSONTokener jsonTokener = new JSONTokener(br.readLine());
+                JSONObject root = (JSONObject) jsonTokener.nextValue();
+                if (root.getBoolean("result")) {
+                    return true;
+                }
+//                return true;
             } catch (Exception e) {
                 return false;
             }
@@ -356,7 +356,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 //            }
 
             // TODO: register the new account here.
-//            return false;
+            return false;
         }
 
         @Override
