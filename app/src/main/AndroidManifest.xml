@@ -22,8 +22,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".WeatherActivity"
-            android:label="夜跑小助手">
-        </activity>
+            android:label="夜跑小助手"></activity>
         <activity
             android:name=".Night_Running"
             android:label="Night Running" />
@@ -52,7 +51,6 @@
             android:name=".AlarmReceiver"
             android:process=":remote" />
 
-
         <activity
             android:name=".LoginActivity"
             android:label="夜跑小助手">
@@ -62,11 +60,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".GymInfo" />
         <activity android:name=".Call_Taxi" />
-        <activity android:name=".taxi_coming"></activity>
-
+        <activity android:name=".taxi_coming" />
+        <activity android:name=".SearchNearPeopleActivity"></activity>
     </application>
 
 </manifest>
