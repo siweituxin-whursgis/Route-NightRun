@@ -3,20 +3,18 @@ package com.example.huyigong.route_nightrun;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 public class Night_Running extends FragmentActivity implements OnClickListener {
-    private running_esimate fg_running_esimate;
-    private running fg_running;
-    private talk fg_talk;
-    private safe fg_safe;
+    private RunningEstimateFragment fg_runningEstimateFragment;
+    private RunningRunFragment fg_running;
+    private RunningTalkFragment fg_talk;
+    private RunningSafeFragment fg_runningSafeFragment;
     private FrameLayout flayout;
     private RelativeLayout course_layout;
     private RelativeLayout found_layout;
