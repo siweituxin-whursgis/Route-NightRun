@@ -10,7 +10,7 @@
 
     <Button
         android:id="@+id/near_people_call_it"
-        android:text="戳TA"
+        android:text="约跑"
         style="@android:style/Widget.Material.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
