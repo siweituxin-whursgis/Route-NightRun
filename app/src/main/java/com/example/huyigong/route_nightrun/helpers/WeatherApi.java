@@ -33,7 +33,24 @@ public class WeatherApi {
             System.out.println("获取天气失败");
             return -1;
         }
+    }
 
+    /**
+     * 获取下雨状况
+     * @return
+     */
+    static public JSONObject getRainStateJson() {
+        try {
+            URL url = new URL(WEATHER_API_ADDRESS);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+            BufferedReader br = new BufferedReader(isr);
+            JSONTokener jsonTokener = new JSONTokener(br.readLine());
+            return  (JSONObject) jsonTokener.nextValue();
+        } catch (Exception e) {
+            System.out.println("获取天气失败");
+            return null;
+        }
     }
 
 }
