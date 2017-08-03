@@ -199,6 +199,14 @@ public class RunningSafeFragment extends Fragment {
                     }
                 }
             });
+            Button button = (Button) view.findViewById(R.id.search_friends);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getActivity(), SearchNearPeopleActivity.class);
+                    getActivity().startActivity(intent);
+                }
+            });
         }
         return view;
     }
