@@ -9,8 +9,11 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -102,6 +105,18 @@ public class RunningTalkFragment extends Fragment {
         return fragment;
     }
 
+    Handler mReceiveReportHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("对方已接收你的请求")
+                    .setMessage("是否需要规划路线？")
+                    .setPositiveButton("是", null)
+                    .setNegativeButton("否", null)
+                    .show();
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,7 +137,10 @@ public class RunningTalkFragment extends Fragment {
         ArrayList<Field> fields = new ArrayList<Field>();
         fields.add(Field.createString("UserName", "姓名", 255));
         FeatureCollectionTable featureCollectionTable = new FeatureCollectionTable(fields, GeometryType.POINT, SpatialReferences.getWgs84());
-        SimpleMarkerSymbol simpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.TRIANGLE, Color.BLUE, 15);
+//        SimpleMarkerSymbol simpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.TRIANGLE, Color.BLUE, 15);
+        PictureMarkerSymbol simpleMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.boy, null));
+        simpleMarkerSymbol.setHeight(30);
+        simpleMarkerSymbol.setWidth(30);
         SimpleRenderer simpleRenderer = new SimpleRenderer(simpleMarkerSymbol);
         featureCollectionTable.setRenderer(simpleRenderer);
         featureCollectionTable.setTitle("NearPeople");
@@ -281,15 +299,22 @@ public class RunningTalkFragment extends Fragment {
                                     public void onClick(View v) {
                                     String strURL = NEAR_PEOPLE_CALL + "?UserName=" + (String) feature.getAttributes().get("UserName");
                                     try {
-                                        URL url = new URL(strURL);
-                                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                                        InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-                                        BufferedReader br = new BufferedReader(isr);
-                                        JSONTokener jsonTokener = new JSONTokener(br.readLine());
-                                        JSONObject root = (JSONObject) jsonTokener.nextValue();
-                                        int statusCode = root.getInt("Status");
+//                                        URL url = new URL(strURL);
+//                                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//                                        InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+//                                        BufferedReader br = new BufferedReader(isr);
+//                                        JSONTokener jsonTokener = new JSONTokener(br.readLine());
+//                                        JSONObject root = (JSONObject) jsonTokener.nextValue();
+//                                        int statusCode = root.getInt("Status");
+                                        int statusCode = 1;
                                         if (statusCode == 1) {
                                             Toast.makeText(getContext(), "已发送请求", Toast.LENGTH_SHORT).show();
+                                            mReceiveReportTimer.schedule(new TimerTask() {
+                                                @Override
+                                                public void run() {
+                                                    mReceiveReportHandler.sendMessage(new Message());
+                                                }
+                                            }, 10000);
                                         } else {
                                             Toast.makeText(getContext(), "发送请求失败", Toast.LENGTH_SHORT).show();
                                         }
@@ -384,5 +409,6 @@ public class RunningTalkFragment extends Fragment {
         }
     }
 
+    Timer mReceiveReportTimer = new Timer();
 
 }
