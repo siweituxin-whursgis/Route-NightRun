@@ -4,15 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.huyigong.route_nightrun.GymInfo">
+    tools:context="com.example.huyigong.route_nightrun.GymInfoActivity">
 
     <ListView
         android:id = "@+id/list_gym"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp"
-
-        />
+        tools:layout_editor_absoluteX="8dp"/>
 
 </android.support.constraint.ConstraintLayout>

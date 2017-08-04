@@ -22,7 +22,12 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".WeatherActivity"
-            android:label="夜跑小助手"></activity>
+            android:label="夜跑小助手">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".Night_Running"
             android:label="Night Running" />
@@ -40,7 +45,7 @@
         <activity android:name=".enroll_marathon" />
         <activity android:name=".success_submit" />
         <activity android:name=".weight_management" />
-        <activity android:name=".Indoor_run" />
+        <activity android:name=".IndoorRunActivity" />
         <activity
             android:name=".AlertActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -53,17 +58,11 @@
 
         <activity
             android:name=".LoginActivity"
-            android:label="夜跑小助手">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".GymInfo" />
+            android:label="夜跑小助手"/>
+        <activity android:name=".GymInfoActivity" />
         <activity android:name=".Call_Taxi" />
         <activity android:name=".taxi_coming" />
-        <activity android:name=".SearchNearPeopleActivity"></activity>
+        <activity android:name=".SearchNearPeopleActivity"/>
     </application>
 
 </manifest>
