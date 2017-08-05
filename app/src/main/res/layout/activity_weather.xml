@@ -30,7 +30,6 @@
             android:textSize="40sp" />
 
 
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="date"
-                android:text="7月18日 星期二"
+                android:text="7月31日 星期一"
                 android:textColor="@android:color/background_light"
                 android:textColorLink="@android:color/primary_text_dark"
                 android:textStyle="bold"
@@ -75,7 +74,7 @@
                 android:ems="10"
                 android:gravity="center"
                 android:inputType="textPersonName"
-                android:text="当前定位城市：武汉"
+                android:text="当前定位城市："
                 android:textAlignment="center"
                 android:textColor="@android:color/background_light"
                 android:textSize="18sp"
@@ -113,7 +112,7 @@
                 android:layout_marginLeft="70dp"
                 android:layout_weight="0.38"
                 android:gravity="center"
-                android:text="风向：西南风 湿度：14%"
+                android:text="风向：西南风 湿度："
                 android:textAlignment="center"
                 android:textColor="@android:color/background_light"
                 android:textSize="18sp"
@@ -126,7 +125,7 @@
                 android:layout_marginLeft="70dp"
                 android:layout_weight="0.38"
                 android:gravity="center"
-                android:text="推荐：室外夜跑"
+                android:text="推荐："
                 android:textAlignment="center"
                 android:textColor="@android:color/background_light"
                 android:textSize="18sp"
