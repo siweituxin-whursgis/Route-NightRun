@@ -268,6 +268,7 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
                         feature.getAttributes().put("UserName", nightRunner.getUserName());
                         feature.getAttributes().put("UserGender", nightRunner.getUserGender());
                         feature.getAttributes().put("UserAverageRunTime", nightRunner.getUserAverageRunTime());
+                        feature.getAttributes().put("UserAddress", nightRunner.getUserAddress());
                         feature.getAttributes().put("PositionLat", nightRunner.getPositionLat());
                         feature.getAttributes().put("PositionLng", nightRunner.getPositionLng());
                         feature.setGeometry(new Point(nightRunner.getPositionLng(), nightRunner.getPositionLat(), SpatialReferences.getWgs84()));
