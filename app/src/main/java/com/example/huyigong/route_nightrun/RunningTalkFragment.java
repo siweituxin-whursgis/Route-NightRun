@@ -138,7 +138,7 @@ public class RunningTalkFragment extends Fragment {
         fields.add(Field.createString("UserName", "姓名", 255));
         FeatureCollectionTable featureCollectionTable = new FeatureCollectionTable(fields, GeometryType.POINT, SpatialReferences.getWgs84());
 //        SimpleMarkerSymbol simpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.TRIANGLE, Color.BLUE, 15);
-        PictureMarkerSymbol simpleMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.boy, null));
+        PictureMarkerSymbol simpleMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.boy_red, null));
         simpleMarkerSymbol.setHeight(30);
         simpleMarkerSymbol.setWidth(30);
         SimpleRenderer simpleRenderer = new SimpleRenderer(simpleMarkerSymbol);

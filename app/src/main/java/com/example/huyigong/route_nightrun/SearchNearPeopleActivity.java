@@ -115,8 +115,10 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
         ArrayList<Field> fields = new ArrayList<Field>();
         fields.add(Field.createString("UserName", "姓名", 255));
         FeatureCollectionTable featureCollectionTable = new FeatureCollectionTable(fields, GeometryType.POINT, SpatialReferences.getWgs84());
-        SimpleMarkerSymbol simpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.TRIANGLE, Color.BLUE, 15);
-        SimpleRenderer simpleRenderer = new SimpleRenderer(simpleMarkerSymbol);
+        PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable) getDrawable(R.drawable.boy_red));
+        pictureMarkerSymbol.setHeight(30);
+        pictureMarkerSymbol.setWidth(30);
+        SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
         featureCollectionTable.setRenderer(simpleRenderer);
         featureCollectionTable.setTitle("NearPeople");
         ArrayList<FeatureCollectionTable> mFeatureCollectionTables = new ArrayList<>();
