@@ -172,9 +172,12 @@ public class IndoorRunActivity extends AppCompatActivity {
         Parcelable parcelable = intent.getParcelableExtra("Gym");
         if (parcelable != null && parcelable instanceof Gym) {
             final Gym gym = (Gym) parcelable;
+            if (mCurLocation == null) {
+                mCurLocation = getLocation();
+            }
             new Thread(new RouteRunnable(
                     new Point(mCurLocation.getLongitude(), mCurLocation.getLatitude(), SpatialReferences.getWgs84()),
-                    new Point(gym.getGymLng(), gym.getGymLat()))).start();
+                    new Point(gym.getGymLng(), gym.getGymLat(), SpatialReferences.getWgs84()))).start();
         }
     }
 
@@ -220,7 +223,7 @@ public class IndoorRunActivity extends AppCompatActivity {
         public void run() {
             try {
                 for (final Feature feature : mResult) {
-                    Callout callout = mMapView.getCallout();
+                    final Callout callout = mMapView.getCallout();
                     callout.setLocation((Point) feature.getGeometry());
                     callout.setStyle(new Callout.Style(getApplicationContext(), R.xml.calloutstyle));
                     View calloutView = View.inflate(getApplicationContext(), R.layout.gym_callout_layout, null);
@@ -236,9 +239,13 @@ public class IndoorRunActivity extends AppCompatActivity {
                     ((Button) calloutView.findViewById(R.id.gym_callout_goto)).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            if (mCurLocation == null) {
+                                mCurLocation = getLocation();
+                            }
                             Point cur = new Point(mCurLocation.getLongitude(), mCurLocation.getLatitude(), SpatialReferences.getWgs84());
                             Point gym = new Point((double) feature.getAttributes().get("GymLng"), (double) feature.getAttributes().get("GymLat"), SpatialReferences.getWgs84());
                             new Thread(new RouteRunnable(cur, gym)).start();
+                            callout.dismiss();
                         }
                     });
                     callout.setContent(calloutView);
@@ -342,7 +349,7 @@ public class IndoorRunActivity extends AppCompatActivity {
             ((PictureMarkerSymbol) symbol).setWidth(30);
         }
         else {
-            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.CYAN, 15);
+            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.argb(192, 0, 16, 233), 15);
         }
         return new SimpleRenderer(symbol);
     }
@@ -352,7 +359,7 @@ public class IndoorRunActivity extends AppCompatActivity {
      * @return 渲染器
      */
     private Renderer createRouteRenderer() {
-        SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.DKGRAY, 3);
+        SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3);
         return new SimpleRenderer(lineSymbol);
     }
 

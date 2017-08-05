@@ -375,6 +375,7 @@ public class RunningTalkFragment extends Fragment {
         super.onResume();
         mMapView.resume();
         // 获取周围的人的位置
+        mNearPeopleTimer = new Timer();
         mNearPeopleTimer.schedule(new TimerTask() {
             @Override
             public void run() {
