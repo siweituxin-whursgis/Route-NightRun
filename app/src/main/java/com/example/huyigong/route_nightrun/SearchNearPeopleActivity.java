@@ -6,7 +6,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,6 +42,9 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
+import com.example.huyigong.route_nightrun.Substances.NightRunner;
+import com.example.huyigong.route_nightrun.Substances.NightRunnersInfo;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,7 +55,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -97,6 +105,18 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
 
     Timer mNearPeopleTimer;
 
+    ArrayList<Field> createFields() {
+        ArrayList<Field> fields = new ArrayList<Field>();
+        fields.add(Field.createInteger("UserID", "ID"));
+        fields.add(Field.createString("UserName", "姓名", 255));
+        fields.add(Field.createInteger("UserGender", "性别"));
+        fields.add(Field.createInteger("UserAverageRunTime", "平均奔跑时长"));
+        fields.add(Field.createString("UserAddress", "地址", 255));
+        fields.add(Field.createDouble("PositionLat", "纬度"));
+        fields.add(Field.createDouble("PositionLng", "经度"));
+        return fields;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,11 +132,11 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
         mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
         mGraphicsOverlay = new GraphicsOverlay();
         // 创建要素图层
-        ArrayList<Field> fields = new ArrayList<Field>();
-        fields.add(Field.createString("UserName", "姓名", 255));
-        FeatureCollectionTable featureCollectionTable = new FeatureCollectionTable(fields, GeometryType.POINT, SpatialReferences.getWgs84());
-        SimpleMarkerSymbol simpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.TRIANGLE, Color.BLUE, 15);
-        SimpleRenderer simpleRenderer = new SimpleRenderer(simpleMarkerSymbol);
+        FeatureCollectionTable featureCollectionTable = new FeatureCollectionTable(createFields(), GeometryType.POINT, SpatialReferences.getWgs84());
+        PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable) getDrawable(R.drawable.boy_red));
+        pictureMarkerSymbol.setHeight(30);
+        pictureMarkerSymbol.setWidth(30);
+        SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
         featureCollectionTable.setRenderer(simpleRenderer);
         featureCollectionTable.setTitle("NearPeople");
         ArrayList<FeatureCollectionTable> mFeatureCollectionTables = new ArrayList<>();
@@ -176,35 +196,43 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
 
                             while (iterator.hasNext()) {
                                 final Feature feature = iterator.next();
-                                Callout callout = mMapView.getCallout();
+                                final Callout callout = mMapView.getCallout();
                                 callout.setLocation((Point) feature.getGeometry());
                                 callout.setStyle(new Callout.Style(getApplicationContext(), R.xml.calloutstyle));
                                 View calloutView = View.inflate(getApplicationContext(), R.layout.search_friend_callout_layout, null);
-                                TextView textViewName = (TextView) calloutView.findViewById(R.id.near_people_name);
-                                String name = (String) feature.getAttributes().get("UserName");
-                                textViewName.setText(name);
-                                Button button = (Button) calloutView.findViewById(R.id.near_people_call_it);
-                                button.setText("联系");
-                                button.setOnClickListener(new View.OnClickListener() {
+                                ((TextView) calloutView.findViewById(R.id.near_people_name)).setText((String) feature.getAttributes().get("UserName"));
+                                String gender = ((int) feature.getAttributes().get("UserGender")) == 1 ? "男生" : "女生";
+                                ((TextView) calloutView.findViewById(R.id.near_people_sex)).setText(gender);
+                                Date date = new Date(((int) feature.getAttributes().get("UserAverageRunTime")) * 1000);
+                                SimpleDateFormat format = new SimpleDateFormat("HH时mm分ss秒");
+                                ((TextView) calloutView.findViewById(R.id.near_people_runtime)).setText(format.format(date));
+                                ((TextView) calloutView.findViewById(R.id.near_people_address)).setText((String) feature.getAttributes().get("UserAddress"));
+                                ((Button) calloutView.findViewById(R.id.near_people_call_it)).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
                                         String strURL = NEAR_PEOPLE_CALL + "?UserName=" + (String) feature.getAttributes().get("UserName");
                                         try {
-                                            URL url = new URL(strURL);
-                                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                                            InputStreamReader isr = new InputStreamReader(connection.getInputStream());
-                                            BufferedReader br = new BufferedReader(isr);
-                                            JSONTokener jsonTokener = new JSONTokener(br.readLine());
-                                            JSONObject root = (JSONObject) jsonTokener.nextValue();
-                                            int statusCode = root.getInt("Status");
+                                            int statusCode = 1;
                                             if (statusCode == 1) {
                                                 Toast.makeText(getApplicationContext(), "已发送请求", Toast.LENGTH_SHORT).show();
+                                                mReceiveReportTimer.schedule(new TimerTask() {
+                                                    @Override
+                                                    public void run() {
+                                                        mReceiveReportHandler.sendMessage(new Message());
+                                                    }
+                                                }, 10000);
                                             } else {
                                                 Toast.makeText(getApplicationContext(), "发送请求失败", Toast.LENGTH_SHORT).show();
                                             }
                                         } catch (Exception e) {
                                             Toast.makeText(getApplicationContext(), "发送请求失败", Toast.LENGTH_SHORT).show();
                                         }
+                                    }
+                                });
+                                ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        callout.dismiss();
                                     }
                                 });
                                 callout.setContent(calloutView);
@@ -231,16 +259,19 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     InputStreamReader isr = new InputStreamReader(connection.getInputStream());
                     BufferedReader br = new BufferedReader(isr);
-                    JSONTokener jsonTokener = new JSONTokener(br.readLine());
-                    JSONArray nearPeopleArray = ((JSONObject) jsonTokener.nextValue()).getJSONArray("NearPeople");
-                    for (int i = 0; i < nearPeopleArray.length(); i++) {
-                        JSONObject nearPerson = nearPeopleArray.getJSONObject(i);
-                        String name = nearPerson.getString("UserName");
-                        double lat = nearPerson.getDouble("PositionLat");
-                        double lng = nearPerson.getDouble("PositionLng");
+                    String jsonString = br.readLine();
+                    Gson gson = new Gson();
+                    NightRunnersInfo nightRunnersInfo = gson.fromJson(jsonString, NightRunnersInfo.class);
+                    for (NightRunner nightRunner : nightRunnersInfo.getNearPeople()) {
                         Feature feature = table.createFeature();
-                        feature.setGeometry(new Point(lng, lat));
-                        feature.getAttributes().put("UserName", name);
+                        feature.getAttributes().put("UserID", nightRunner.getUserID());
+                        feature.getAttributes().put("UserName", nightRunner.getUserName());
+                        feature.getAttributes().put("UserGender", nightRunner.getUserGender());
+                        feature.getAttributes().put("UserAverageRunTime", nightRunner.getUserAverageRunTime());
+                        feature.getAttributes().put("UserAddress", nightRunner.getUserAddress());
+                        feature.getAttributes().put("PositionLat", nightRunner.getPositionLat());
+                        feature.getAttributes().put("PositionLng", nightRunner.getPositionLng());
+                        feature.setGeometry(new Point(nightRunner.getPositionLng(), nightRunner.getPositionLat(), SpatialReferences.getWgs84()));
                         table.addFeatureAsync(feature);
                     }
                 } catch (MalformedURLException me) {
@@ -285,4 +316,17 @@ public class SearchNearPeopleActivity extends AppCompatActivity {
         super.onResume();
         mMapView.resume();
     }
+
+    Timer mReceiveReportTimer = new Timer();
+    Handler mReceiveReportHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            new AlertDialog.Builder(getApplicationContext())
+                    .setTitle("对方已接收你的请求")
+                    .setMessage("是否需要规划路线？")
+                    .setPositiveButton("是", null)
+                    .setNegativeButton("否", null)
+                    .show();
+        }
+    };
 }
