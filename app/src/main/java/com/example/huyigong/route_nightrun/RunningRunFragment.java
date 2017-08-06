@@ -1,7 +1,8 @@
 package com.example.huyigong.route_nightrun;
 
-import android.app.Fragment;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -9,24 +10,28 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.text.InputType;
 import android.util.Log;
+import android.view.FrameStats;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.GridLayout;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.Toast;
 
-import com.esri.arcgisruntime.concurrent.ListenableFuture;
-import com.esri.arcgisruntime.data.FeatureTable;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.PointCollection;
 import com.esri.arcgisruntime.geometry.Polyline;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
-import com.esri.arcgisruntime.internal.jni.CoreRoute;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
@@ -36,12 +41,6 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.Symbol;
-import com.esri.arcgisruntime.tasks.networkanalysis.Route;
-import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
-import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
-import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
-import com.esri.arcgisruntime.tasks.networkanalysis.Stop;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -57,9 +56,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 //import org.gjt.mm.mysql.Driver;
 
 /**
@@ -70,7 +66,7 @@ import java.util.concurrent.TimeUnit;
  * Use the {@link RunningRunFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RunningRunFragment extends Fragment{
+public class RunningRunFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -158,40 +154,49 @@ public class RunningRunFragment extends Fragment{
         void onFragmentInteraction(Uri uri);
     }
 
+    double planningDistance = -1;
+    boolean haveGotRoute = false;
+    boolean showLoctionAlways = false;
+    ArrayList<Point> planningRoute = new ArrayList<Point>();
+    enum fragmentStatus{
+        ShowMap,
+        RoutingByDistance_Unstart,
+        RoutingByStops_Unstart,
+        RoutingByDistance,
+        RoutingByStops,
+        Pause,
+    };
+    fragmentStatus mFragmentStatus = fragmentStatus.ShowMap;
+
+    LinearLayout layoutOfRoutingButton = null;
+    GridLayout layoutOfStartButton = null;
+    GridLayout layoutOfContinueButton = null;
+    Button btnRoutingByDistance = null;
+    Button btnRoutingByStops= null;
+    Button btnStart = null;
+    Button btnContinue = null;
     MapView mMapView;   // 地图
     ArcGISMap mArcGISMap;
     Graphic mCurPointGraphic; // 当前点
     GraphicsOverlay mPointsOverlay;
+    GraphicsOverlay mPositionOverlay;
     GraphicsOverlay mLinesOverlay;
     GraphicsOverlay mPolygonsOverlay;
     GraphicsOverlay mOthersOverlay;
     LocationManager mLocationManager; // 定位服务
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
+    Point userPosition = null;
 
     //用于引用传递
     private class DoubleReferance{
         private double mValue;
 
-        public  DoubleReferance()
-        {
-            mValue = 0;
-        }
+        public  DoubleReferance(double initValue) { mValue = initValue; }
 
-        public  DoubleReferance(double initValue)
-        {
-            mValue = initValue;
-        }
+        public void setValue(double value) { mValue = value; }
 
-        public void setValue(double value)
-        {
-            mValue = value;
-        }
-
-        public double getValue()
-        {
-            return mValue;
-        }
+        public double getValue() { return mValue; }
     }
 
     LocationListener mLocationListener = new LocationListener() {
@@ -199,9 +204,17 @@ public class RunningRunFragment extends Fragment{
         public void onLocationChanged(Location location) {
             if (location != null)
             {
-//                Point pinPoint = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
-//                mMapView.setViewpointCenterAsync(pinPoint);
-//                mCurPointGraphic.setGeometry(pinPoint);
+//                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
+                userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                if(planningRoute != null && planningRoute.size() != 0)
+                {
+
+                }
+                if(showLoctionAlways)
+                {
+                    mMapView.setViewpointCenterAsync(userPosition);
+                    mCurPointGraphic.setGeometry(userPosition);
+                }
             }
             else
             {
@@ -230,7 +243,6 @@ public class RunningRunFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 //       super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_running, container, false);
-
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         try
         {
@@ -244,14 +256,17 @@ public class RunningRunFragment extends Fragment{
         mMapView = (MapView) view.findViewById(R.id.mapView);
         mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
         mPointsOverlay = new GraphicsOverlay();
+        mPositionOverlay = new GraphicsOverlay();
         {
-            mCurPointGraphic = new Graphic(new Point(mMapView.getPivotX(), mMapView.getY(), SpatialReferences.getWgs84()), new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.BLUE, 16));
-            mPointsOverlay.getGraphics().add(mCurPointGraphic);
+            mCurPointGraphic = new Graphic(new Point(mMapView.getPivotX(), mMapView.getY(), SpatialReferences.getWgs84()), new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.RED, 10));
+            mCurPointGraphic.setVisible(false);
+            mPositionOverlay.getGraphics().add(mCurPointGraphic);
         }
         mLinesOverlay = new GraphicsOverlay();
         mPolygonsOverlay = new GraphicsOverlay();
         mOthersOverlay = new GraphicsOverlay();
         mMapView.getGraphicsOverlays().add(mPointsOverlay);
+        mMapView.getGraphicsOverlays().add(mPositionOverlay);
         mMapView.getGraphicsOverlays().add(mLinesOverlay);
         mMapView.getGraphicsOverlays().add(mPolygonsOverlay);
         mMapView.getGraphicsOverlays().add(mOthersOverlay);
@@ -268,17 +283,11 @@ public class RunningRunFragment extends Fragment{
             @Override
             public boolean onDoubleTap(MotionEvent event)
             {
-//                final Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
-//                Thread t = new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        GenerateRouteByDistance(point ,1000);
-//                    }
-//                });
-//                t.start();
+                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
+                    return false;
                 Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
                 stopPointsForShortestRoute.add(point);
-                final Graphic g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.RED,16));
+                final Graphic g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.BLUE,8));
                 mPointsOverlay.getGraphics().add(g);
                 return false;
             }
@@ -286,65 +295,229 @@ public class RunningRunFragment extends Fragment{
             @Override
             public void onLongPress(MotionEvent e)
             {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        DoubleReferance dr = new DoubleReferance(0);
-                        ArrayList<Point> points = GetShortestRoute(stopPointsForShortestRoute, dr);
-                        stopPointsForShortestRoute.clear();
-                        if(points == null)
-                            return;
-                        double distance1 = dr.getValue();
-                        ArrayList<Point> backPoints = GetShortestRoute(points.get(points.size() - 1), points.get(0), dr);
-                        if(backPoints == null)
-                            return;
-                        mLinesOverlay.getGraphics().clear();
-                        mPointsOverlay.getGraphics().clear();
-                        DrawRoute(points, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 4));
-                        DrawRoute(backPoints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.BLUE, 2));
-                        Looper.prepare();
-                        Toast.makeText(getActivity(), "路径长度：" + (dr.getValue() + distance1) + "m", Toast.LENGTH_LONG).show();
-                        Looper.loop();
-                    }
-                });
-                t.start();
             }
         });
 
         GenerateEndPoinrsFromFile();
+
+        layoutOfRoutingButton = (LinearLayout)view.findViewById(R.id.layout_routing);
+        {
+            layoutOfRoutingButton.setVisibility(View.VISIBLE);
+        }
+
+        layoutOfStartButton = (GridLayout) view.findViewById(R.id.layout_start);
+        {
+            layoutOfStartButton.setVisibility(View.GONE);
+        }
+
+        layoutOfContinueButton = (GridLayout) view.findViewById(R.id.layout_continue);
+        {
+            layoutOfStartButton.setVisibility(View.GONE);
+        }
+
+        btnRoutingByDistance = (Button)view.findViewById(R.id.btn_specify_route_length);
+        {
+            btnRoutingByDistance.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(userPosition == null)
+                    {
+                        Toast.makeText(getContext(), "获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    final EditText inputServer = new EditText(getContext());
+                    inputServer.setHint("夜跑距离");
+                    inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle("请输入夜跑距离").setIcon(android.R.drawable.ic_dialog_map).setView(inputServer).setNegativeButton("取消", null);
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            try
+                            {
+                                planningDistance = Double.parseDouble(inputServer.getText().toString());
+                                if(planningDistance > 5000 || planningDistance < 500)
+                                {
+                                    planningDistance = 0;
+                                    Toast.makeText(getContext(), "输入有效值为500~5000，请重新输入", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                                else
+                                {
+                                    layoutOfRoutingButton.setVisibility(View.GONE);
+                                    layoutOfStartButton.setVisibility(View.VISIBLE);
+                                    mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
+                                    mMapView.setViewpointCenterAsync(userPosition);
+                                    mCurPointGraphic.setGeometry(userPosition);
+                                    mCurPointGraphic.setVisible(true);
+                                    btnStart.setText("获取路径...");
+                                    btnStart.setEnabled(false);
+                                    Toast.makeText(getContext(), "本方法较为耗时，请耐心等待", Toast.LENGTH_SHORT).show();
+                                    Thread t = new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            ArrayList<Point> points =  GenerateRouteByDistance(userPosition, planningDistance / 2);
+                                            if(points == null)
+                                            {
+                                                Toast.makeText(getContext(), "路径规划失败", Toast.LENGTH_LONG).show();
+                                                InitFragment();
+                                                return;
+                                            }
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    btnStart.setText("开始夜跑");
+                                                    btnStart.setEnabled(true);
+                                                    Toast.makeText(getContext(), "点击开始夜跑启动实时定位", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                            planningRoute = points;
+                                            DrawRoute(points, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 3));
+                                            mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
+                                        }
+                                    });
+                                    t.start();
+                                }
+                            }
+                            catch (NumberFormatException ex)
+                            {
+                                Toast.makeText(getContext(), "输入格式有误", Toast.LENGTH_LONG).show();
+                                InitFragment();
+                                return;
+                            }
+                        }
+                    });
+                    builder.show();
+                }
+            });
+        }
+
+        btnRoutingByStops = (Button)view.findViewById(R.id.btn_specify_route_stops);
+        {
+            btnRoutingByStops.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(getContext(), "双击确定经过站点，点击\"开始夜跑按钮\"产生夜跑路线", Toast.LENGTH_LONG).show();
+                    layoutOfRoutingButton.setVisibility(View.GONE);
+                    layoutOfStartButton.setVisibility(View.VISIBLE);
+                    mFragmentStatus = fragmentStatus.RoutingByStops_Unstart;
+                    stopPointsForShortestRoute.clear();
+                    mMapView.setViewpointCenterAsync(userPosition);
+                    mCurPointGraphic.setGeometry(userPosition);
+                    mCurPointGraphic.setVisible(true);
+                    btnStart.setEnabled(true);
+                }
+            });
+        }
+
+        btnStart = (Button)view.findViewById(R.id.btn_start_run);
+        {
+            btnStart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(mFragmentStatus == fragmentStatus.ShowMap)
+                    {
+
+                    }
+                    else if(mFragmentStatus == fragmentStatus.RoutingByDistance_Unstart)
+                    {
+                        mMapView.setViewpointCenterAsync(userPosition);
+                        mCurPointGraphic.setGeometry(userPosition);
+                        mFragmentStatus = fragmentStatus.RoutingByDistance;
+                        btnStart.setText("暂停");
+                        mCurPointGraphic.setVisible(true);
+                        showLoctionAlways = true;
+                    }
+                    else if(mFragmentStatus == fragmentStatus.RoutingByStops_Unstart)
+                    {
+                        if(stopPointsForShortestRoute.size() < 1)
+                        {
+                            Toast.makeText(getActivity(), "请选择站点", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        mFragmentStatus = fragmentStatus.RoutingByStops;
+                        btnStart.setText("获取路径...");
+                        btnStart.setEnabled(false);
+                        showLoctionAlways = false;
+                        mCurPointGraphic.setVisible(true);
+                        showLoctionAlways = true;
+                        GetShortestRoute();
+                    }
+                    else if(mFragmentStatus == fragmentStatus.RoutingByDistance)
+                    {
+                        mFragmentStatus = fragmentStatus.Pause;
+                        btnStart.setText("停止夜跑");
+                        btnStart.setEnabled(true);
+                        showLoctionAlways = false;
+                        layoutOfContinueButton.setVisibility(View.VISIBLE);
+                    }
+                    else if(mFragmentStatus == fragmentStatus.RoutingByStops)
+                    {
+                        mFragmentStatus = fragmentStatus.Pause;
+                        btnStart.setText("停止夜跑");
+                        btnStart.setEnabled(true);
+                        showLoctionAlways = false;
+                        layoutOfContinueButton.setVisibility(View.VISIBLE);
+                    }
+                    else if(mFragmentStatus == fragmentStatus.Pause)
+                    {
+                        InitFragment();
+                    }
+                }
+            });
+        }
+
+        btnContinue = (Button)view.findViewById(R.id.btn_continue_run);
+        {
+            btnContinue.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mMapView.setViewpointCenterAsync(userPosition);
+                    mCurPointGraphic.setGeometry(userPosition);
+                    mFragmentStatus = fragmentStatus.RoutingByDistance;
+                    btnStart.setText("暂停");
+                    layoutOfContinueButton.setVisibility(View.GONE);
+                    mCurPointGraphic.setVisible(true);
+                    showLoctionAlways = true;
+                }
+            });
+        }
+
         return view;
     }
 
-    private void GenerateRouteByDistance(Point point ,double lengthOfRouth)
+    private ArrayList<Point> GenerateRouteByDistance(Point pointGps ,double lengthOfRouth)
     {
         try
         {
-            final Graphic g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.RED,16));
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mPointsOverlay.getGraphics().add(g);
-                }
-            });
-
+            Point point = (Point)GeometryEngine.project(pointGps, mMapView.getSpatialReference());
             Point leftTop = new Point(point.getX() - lengthOfRouth, point.getY() - lengthOfRouth, point.getSpatialReference());
             Point rightButtom = new Point(point.getX() + lengthOfRouth, point.getY() + lengthOfRouth, point.getSpatialReference());
             Point leftTopGps = (Point)GeometryEngine.project(leftTop, SpatialReference.create(4326));
             Point rightButtomGps = (Point)GeometryEngine.project(rightButtom, SpatialReference.create(4326));
 
-            ArrayList<Point> pointForRoutePlanning = new ArrayList<Point>();
+            ArrayList<Point> pointsInBigRect = new ArrayList<Point>();
             for (Point tempPoint : allStopPointsList)
             {
                 if (tempPoint.getX() < rightButtomGps.getX() && tempPoint.getX() > leftTopGps.getX() && tempPoint.getY() < rightButtomGps.getY() && tempPoint.getY() > leftTopGps.getY())
+                    pointsInBigRect.add(tempPoint);
+            }
+
+            leftTop = new Point(point.getX() - lengthOfRouth / 2, point.getY() - lengthOfRouth / 2, point.getSpatialReference());
+            rightButtom = new Point(point.getX() + lengthOfRouth / 2, point.getY() + lengthOfRouth / 2, point.getSpatialReference());
+            leftTopGps = (Point)GeometryEngine.project(leftTop, SpatialReference.create(4326));
+            rightButtomGps = (Point)GeometryEngine.project(rightButtom, SpatialReference.create(4326));
+
+            ArrayList<Point> pointForRoutePlanning = new ArrayList<Point>();
+            for (Point tempPoint : pointsInBigRect)
+            {
+                if (!(tempPoint.getX() < rightButtomGps.getX() && tempPoint.getX() > leftTopGps.getX() && tempPoint.getY() < rightButtomGps.getY() && tempPoint.getY() > leftTopGps.getY()))
                     pointForRoutePlanning.add(tempPoint);
             }
 
             if(pointForRoutePlanning.size() == 0)
             {
-                Looper.prepare();
                 Toast.makeText(getActivity(), "无适合您当前位置的路径规划", Toast.LENGTH_LONG).show();
-                Looper.loop();
-                return;
+                return null;
             }
 
             double[] distanceOfAllRoutes = new double[pointForRoutePlanning.size()];
@@ -354,10 +527,8 @@ public class RunningRunFragment extends Fragment{
                 {
                     if((distanceOfAllRoutes[index++] = GetDistanceOfShortestRoute(point, tempPoint)) == -1)
                     {
-                        Looper.prepare();
                         Toast.makeText(getActivity(), "网络错误，路径规划失败", Toast.LENGTH_LONG).show();
-                        Looper.loop();
-                        return;
+                        return null;
                     }
                 }
             }
@@ -374,17 +545,21 @@ public class RunningRunFragment extends Fragment{
                     }
                 }
             }
+
             ArrayList<Point> pointsArrayList = GetShortestRoute(point, pointForRoutePlanning.get(indexOfNeareatRoute), null);
-            DrawRoute(pointsArrayList, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 3));
-            Looper.prepare();
-            Toast.makeText(getActivity(), "路径规划长度：" + NearestDistence + "m", Toast.LENGTH_LONG).show();
-            Looper.loop();
+            ArrayList<Point> resultPoints = new ArrayList<Point>();
+            resultPoints.add(pointGps);
+            for(Point tempPoint : pointsArrayList)
+            {
+                resultPoints.add(tempPoint);
+            }
+            haveGotRoute = true;
+            return resultPoints;
         }
         catch (Exception ex)
         {
-            Looper.prepare();
-            Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
-            Looper.loop();
+            ex.printStackTrace();
+            return null;
         }
     }
 
@@ -430,8 +605,8 @@ public class RunningRunFragment extends Fragment{
                 Point point = new Point(lng, lat, SpatialReferences.getWgs84());
                 allStopPointsList.add(point);
 
-                Graphic graphic = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.BLUE, 8));
-                mPointsOverlay.getGraphics().add(graphic);
+//                Graphic graphic = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.BLUE, 8));
+//                mPointsOverlay.getGraphics().add(graphic);
             }
         }
         catch(Exception e)
@@ -439,6 +614,55 @@ public class RunningRunFragment extends Fragment{
             Log.e("tag", e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void GetShortestRoute()
+    {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DoubleReferance dr = new DoubleReferance(0);
+                ArrayList<Point> stops = new ArrayList<Point>();
+                stops.add((Point)GeometryEngine.project(userPosition, mMapView.getSpatialReference()));
+                for(Point tempPoint : stopPointsForShortestRoute)
+                {
+                    stops.add(tempPoint);
+                }
+                stops.add((Point)GeometryEngine.project(userPosition, mMapView.getSpatialReference()));
+                stopPointsForShortestRoute.clear();
+                ArrayList<Point> points = GetShortestRoute(stops, dr);
+                if(points == null)
+                {
+                    Toast.makeText(getActivity(), "获取路径失败，请检查网络状态或定位服务", Toast.LENGTH_LONG).show();
+                    InitFragment();
+                    return;
+                }
+
+                ArrayList<Point> resultPooints = new ArrayList<Point>();
+                resultPooints.add(userPosition);
+                for(Point tempPoint : points)
+                {
+                    resultPooints.add(tempPoint);
+                }
+                resultPooints.add(userPosition);
+                planningRoute = resultPooints;
+
+                DrawRoute(resultPooints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 4));
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMapView.setViewpointCenterAsync(userPosition);
+                        mCurPointGraphic.setGeometry(userPosition);
+                        mFragmentStatus = fragmentStatus.RoutingByStops;
+                        btnStart.setText("暂停");
+                        mCurPointGraphic.setVisible(true);
+                        showLoctionAlways = true;
+                        btnStart.setEnabled(true);
+                    }
+                });
+            }
+        });
+        t.start();
     }
 
     @Nullable
@@ -452,13 +676,15 @@ public class RunningRunFragment extends Fragment{
             //ArcGIS最短路径服务
 //            String urlString = "https://utility.arcgis.com/usrsvcs/appservices/7lLQlGpstsTR8hpm/rest/services/World/Route/NAServer/Route_World/solve?token=OU0KQBwzj2vm3AV7EvTzWMtwkFRK0VxLkWiZKT6TwQoRIr1mEIESvPHP50ufoQAJ-qhiEne93ThUi5rxvHFMSMULBt5qb2CEpu05EDMjKagstbDxK7sCj4qrAEJywpq70qxEPPQfHOirXv2Umol21w..&f=json&stops=114,30;114.5,31";
             //graphhopper最短路径服务
-            String urlString = "https://graphhopper.com/api/1/route?point=" + start.getY() + "," + start.getX() + "&point=" + end.getY() + "," + end.getX() + "&vehicle=car&debug=true&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
+            String urlString = "https://graphhopper.com/api/1/route?point=" + start.getY() + "," + start.getX() + "&point=" + end.getY() + "," + end.getX() + "&vehicle=foot&debug=false&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
             HttpURLConnection connection = null;
-            URL url = new URL(urlString);
-            connection=(HttpURLConnection)url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(4000);
+            {
+                URL url = new URL(urlString);
+                connection=(HttpURLConnection)url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(4000);
+            }
             InputStream in = connection.getInputStream();
             BufferedReader bufr = new BufferedReader(new InputStreamReader(in));
             String response = "";
@@ -514,7 +740,7 @@ public class RunningRunFragment extends Fragment{
                     pointParamString += "point=" + (stopPointsWgs84.get(i).getY() + "," + stopPointsWgs84.get(i).getX() + "&");
                 }
             }
-            String othersParamString = "vehicle=car&debug=true&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
+            String othersParamString = "vehicle=foot&debug=false&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
             String urlString = baseUrlString + "?" + pointParamString + othersParamString;
             HttpURLConnection connection = null;
             URL url = new URL(urlString);
@@ -565,7 +791,7 @@ public class RunningRunFragment extends Fragment{
             //ArcGIS最短路径服务
 //            String urlString = "https://utility.arcgis.com/usrsvcs/appservices/7lLQlGpstsTR8hpm/rest/services/World/Route/NAServer/Route_World/solve?token=OU0KQBwzj2vm3AV7EvTzWMtwkFRK0VxLkWiZKT6TwQoRIr1mEIESvPHP50ufoQAJ-qhiEne93ThUi5rxvHFMSMULBt5qb2CEpu05EDMjKagstbDxK7sCj4qrAEJywpq70qxEPPQfHOirXv2Umol21w..&f=json&stops=114,30;114.5,31";
             //graphhopper最短路径服务
-            String urlString = "https://graphhopper.com/api/1/route?point=" + start.getY() + "," + start.getX() + "&point=" + end.getY() + "," + end.getX() + "&vehicle=car&debug=true&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
+            String urlString = "https://graphhopper.com/api/1/route?point=" + start.getY() + "," + start.getX() + "&point=" + end.getY() + "," + end.getX() + "&vehicle=foot&debug=false&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
             HttpURLConnection connection = null;
             URL url = new URL(urlString);
             connection=(HttpURLConnection)url.openConnection();
@@ -596,14 +822,45 @@ public class RunningRunFragment extends Fragment{
 
     private void DrawRoute(ArrayList<Point> pointsList, Symbol symbol)
     {
-        PointCollection pointCollection = new PointCollection(pointsList);
-        Polyline path = new Polyline(pointCollection, SpatialReference.create(4326));
-
-        final Graphic graphic = new Graphic(path, symbol);getActivity().runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-            mLinesOverlay.getGraphics().add(graphic);
+        try
+        {
+            PointCollection pointCollection = new PointCollection(pointsList);
+            Polyline path = new Polyline(pointCollection, SpatialReference.create(4326));
+            final Graphic graphic = new Graphic(path, symbol);
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mLinesOverlay.getGraphics().add(graphic);
+                }
+            });
         }
-    });
+
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+
+    }
+
+    private void InitFragment()
+    {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mFragmentStatus = fragmentStatus.ShowMap;
+                layoutOfRoutingButton.setVisibility(View.VISIBLE);
+                layoutOfStartButton.setVisibility(View.GONE);
+                layoutOfContinueButton.setVisibility(View.GONE);
+                planningDistance = 0;
+                haveGotRoute = false;
+                mCurPointGraphic.setVisible(false);
+                btnStart.setText("开始夜跑");
+                btnStart.setEnabled(false);
+                showLoctionAlways = false;
+                mPointsOverlay.getGraphics().clear();
+                mLinesOverlay.getGraphics().clear();
+                planningRoute.clear();
+            }
+        });
     }
 }
