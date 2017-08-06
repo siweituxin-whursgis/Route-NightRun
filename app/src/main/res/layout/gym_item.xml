@@ -2,12 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:orientation="vertical"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="15dp">
 
     <TextView
-        android:id="@+id/gymName"
+        android:id="@+id/gym_name"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
         android:text="康斐斯健身（银泰创意城店）"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -15,23 +16,24 @@
     <TextView
         android:id="@+id/gym_location"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         android:text="武汉市洪山区珞瑜路33号珞珈创意体验城11F层" />
 
     <Button
         android:id="@+id/gotothere"
-        android:layout_width="150dp"
-        android:layout_height="20dp"
-        android:layout_marginLeft="250dp"
-        android:layout_marginTop="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
         android:background="@android:color/transparent"
         android:drawableLeft="@drawable/gotothere"
         android:text="去这里"
-        android:textAlignment="textStart"
+        android:textAlignment="center"
         android:textColor="@android:color/darker_gray"
         android:textStyle="bold" />
 
     <View
+        android:visibility="gone"
         android:id="@+id/view7"
         android:layout_width="match_parent"
         android:layout_height="0.5dip"

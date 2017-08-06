@@ -34,9 +34,16 @@
     <string name="section_format">Hello World from section: %1$d</string>
 
     <string name="webapi_host">http://139.129.166.245:4521/</string>
+    <!--<string name="webapi_host">http://192.168.1.105:4521/</string>-->
     <string name="webapi_root">api/</string>
     <string name="webapi_login">login/</string>
     <string name="webapi_nearpeople">nearpeople/</string>
     <string name="webapi_nearpeoplecall">nearpeoplecall/</string>
+    <string name="webapi_gym_info">gyminfo/</string>
     <string name="title_activity_login">登录</string>
+
+    <string name="ClientID">YXtRCPbFpdFFdML0</string>
+    <string name="ClientSecret">8757a41c5b0a4ac9ada8d32a7c415924</string>
+    <string name="gym_callout_goto_text">去这里</string>
+    <string name="gym_callout_call_text">电话：</string>
 </resources>
