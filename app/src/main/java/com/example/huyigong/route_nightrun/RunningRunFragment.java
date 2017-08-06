@@ -4,17 +4,17 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.text.InputType;
 import android.util.Log;
-import android.view.FrameStats;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,7 +23,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
 import android.widget.Toast;
 
 import com.esri.arcgisruntime.geometry.GeometryEngine;
@@ -38,9 +37,11 @@ import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.Symbol;
+import com.example.huyigong.route_nightrun.helpers.CalculateGeometryApi;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -56,7 +57,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-//import org.gjt.mm.mysql.Driver;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -107,12 +107,7 @@ public class RunningRunFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
-
     }
-
-
-
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -154,10 +149,6 @@ public class RunningRunFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    double planningDistance = -1;
-    boolean haveGotRoute = false;
-    boolean showLoctionAlways = false;
-    ArrayList<Point> planningRoute = new ArrayList<Point>();
     enum fragmentStatus{
         ShowMap,
         RoutingByDistance_Unstart,
@@ -167,17 +158,24 @@ public class RunningRunFragment extends Fragment {
         Pause,
     };
     fragmentStatus mFragmentStatus = fragmentStatus.ShowMap;
+    double planningDistance = -1;
+    boolean haveGotRoute = false;
+    boolean showLoctionAlways = false;
+    ArrayList<Point> planningRoute = new ArrayList<Point>();
 
     LinearLayout layoutOfRoutingButton = null;
     GridLayout layoutOfStartButton = null;
     GridLayout layoutOfContinueButton = null;
+    GridLayout layoutOfClearPoints = null;
     Button btnRoutingByDistance = null;
     Button btnRoutingByStops= null;
     Button btnStart = null;
     Button btnContinue = null;
+    Button btnClearPoints = null;
     MapView mMapView;   // 地图
     ArcGISMap mArcGISMap;
     Graphic mCurPointGraphic; // 当前点
+    PictureMarkerSymbol mCurrentPointSymbol;
     GraphicsOverlay mPointsOverlay;
     GraphicsOverlay mPositionOverlay;
     GraphicsOverlay mLinesOverlay;
@@ -187,6 +185,7 @@ public class RunningRunFragment extends Fragment {
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     Point userPosition = null;
+    boolean textBool = true;
 
     //用于引用传递
     private class DoubleReferance{
@@ -202,13 +201,16 @@ public class RunningRunFragment extends Fragment {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            if (location != null)
+            if (location != null && textBool)
             {
+                textBool = false;
 //                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
                 userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
-                if(planningRoute != null && planningRoute.size() != 0)
+                if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
                 {
-
+                    Point nearestPoint = CalculateGeometryApi.GetNearestPointInPolyLine(planningRoute, userPosition);
+                    if(nearestPoint != null && Math.sqrt((nearestPoint.getX() - userPosition.getX())*(nearestPoint.getX() - userPosition.getX()) - (nearestPoint.getY() - userPosition.getY())*(nearestPoint.getY() - userPosition.getY())) < 50)
+                        userPosition = new Point(nearestPoint.getX(), nearestPoint.getY(), nearestPoint.getSpatialReference());
                 }
                 if(showLoctionAlways)
                 {
@@ -218,7 +220,7 @@ public class RunningRunFragment extends Fragment {
             }
             else
             {
-                Toast.makeText(getContext(), "位置获取出错", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getContext(), "位置获取出错", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -244,32 +246,69 @@ public class RunningRunFragment extends Fragment {
 //       super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_running, container, false);
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        boolean networkOn;
         try
         {
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+            networkOn = true;
+        }
+        catch (SecurityException se)
+        {
+            Toast.makeText(getContext(), "建议开启WiFi提高定位精度", Toast.LENGTH_SHORT).show();
+            networkOn = false;
+        }
+        try
+        {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
         }
         catch (SecurityException se)
         {
-            Toast.makeText(getContext(), "未开启定位权限", Toast.LENGTH_SHORT).show();
+            if(networkOn)
+                Toast.makeText(getContext(), "无GPS定位功能", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(getContext(), "无定位服务开启", Toast.LENGTH_SHORT).show();
         }
         mMapView = (MapView) view.findViewById(R.id.mapView);
         mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
         mPointsOverlay = new GraphicsOverlay();
         mPositionOverlay = new GraphicsOverlay();
         {
-            mCurPointGraphic = new Graphic(new Point(mMapView.getPivotX(), mMapView.getY(), SpatialReferences.getWgs84()), new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.RED, 10));
-            mCurPointGraphic.setVisible(false);
-            mPositionOverlay.getGraphics().add(mCurPointGraphic);
+            BitmapDrawable pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.boy);
+            mCurrentPointSymbol = new PictureMarkerSymbol(pinBitmap);
+            mCurrentPointSymbol.setHeight(20);
+            mCurrentPointSymbol.setWidth(20);
+            // 加载当前点
+            mCurrentPointSymbol.loadAsync();
+            mCurrentPointSymbol.addDoneLoadingListener(new Runnable() {
+                @Override
+                public void run() {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCurPointGraphic = new Graphic(new Point(mMapView.getPivotX(), mMapView.getY(), SpatialReferences.getWgs84()), mCurrentPointSymbol);
+                            mCurPointGraphic.setVisible(false);
+                            mPositionOverlay.getGraphics().add(mCurPointGraphic);
+                        }
+                    });
+                }
+            });
+        }
+        try
+        {
+            Thread.sleep(1);
+        }
+        catch (InterruptedException ex)
+        {
+            ex.printStackTrace();
         }
         mLinesOverlay = new GraphicsOverlay();
         mPolygonsOverlay = new GraphicsOverlay();
         mOthersOverlay = new GraphicsOverlay();
-        mMapView.getGraphicsOverlays().add(mPointsOverlay);
-        mMapView.getGraphicsOverlays().add(mPositionOverlay);
-        mMapView.getGraphicsOverlays().add(mLinesOverlay);
         mMapView.getGraphicsOverlays().add(mPolygonsOverlay);
+        mMapView.getGraphicsOverlays().add(mLinesOverlay);
+        mMapView.getGraphicsOverlays().add(mPointsOverlay);
         mMapView.getGraphicsOverlays().add(mOthersOverlay);
+        mMapView.getGraphicsOverlays().add(mPositionOverlay);
         mMapView.setMap(mArcGISMap);
 
         mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(getContext(), mMapView)
@@ -277,24 +316,33 @@ public class RunningRunFragment extends Fragment {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent event)
             {
+                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
+                    return false;
+                Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
+                stopPointsForShortestRoute.add(point);
+                Graphic g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.BLUE,8));
+                mPointsOverlay.getGraphics().add(g);
                 return false;
             }
 
             @Override
             public boolean onDoubleTap(MotionEvent event)
             {
-                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
-                    return false;
-                Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
-                stopPointsForShortestRoute.add(point);
-                final Graphic g = new Graphic(point, new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.CIRCLE, Color.BLUE,8));
-                mPointsOverlay.getGraphics().add(g);
+                userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
+                if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
+                {
+                    Point nearestPoint = CalculateGeometryApi.GetNearestPointInPolyLine(planningRoute, userPosition);
+                    Point userPositionMkt = (Point)GeometryEngine.project(userPosition, mMapView.getSpatialReference());
+                    double d = Math.sqrt((nearestPoint.getX() - userPositionMkt.getX())*(nearestPoint.getX() - userPositionMkt.getX()) + (nearestPoint.getY() - userPositionMkt.getY())*(nearestPoint.getY() - userPositionMkt.getY()));
+                    if(nearestPoint != null && d < 50)
+                        userPosition = new Point(nearestPoint.getX(), nearestPoint.getY(), nearestPoint.getSpatialReference());
+                }
+                if(showLoctionAlways)
+                {
+                    mMapView.setViewpointCenterAsync(userPosition);
+                    mCurPointGraphic.setGeometry(userPosition);
+                }
                 return false;
-            }
-
-            @Override
-            public void onLongPress(MotionEvent e)
-            {
             }
         });
 
@@ -313,6 +361,11 @@ public class RunningRunFragment extends Fragment {
         layoutOfContinueButton = (GridLayout) view.findViewById(R.id.layout_continue);
         {
             layoutOfStartButton.setVisibility(View.GONE);
+        }
+
+        layoutOfClearPoints = (GridLayout) view.findViewById(R.id.layout_clear_points);
+        {
+            layoutOfClearPoints.setVisibility(View.GONE);
         }
 
         btnRoutingByDistance = (Button)view.findViewById(R.id.btn_specify_route_length);
@@ -396,9 +449,15 @@ public class RunningRunFragment extends Fragment {
             btnRoutingByStops.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    if(userPosition == null)
+                    {
+                        Toast.makeText(getContext(), "获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     Toast.makeText(getContext(), "双击确定经过站点，点击\"开始夜跑按钮\"产生夜跑路线", Toast.LENGTH_LONG).show();
                     layoutOfRoutingButton.setVisibility(View.GONE);
                     layoutOfStartButton.setVisibility(View.VISIBLE);
+                    layoutOfClearPoints.setVisibility(View.VISIBLE);
                     mFragmentStatus = fragmentStatus.RoutingByStops_Unstart;
                     stopPointsForShortestRoute.clear();
                     mMapView.setViewpointCenterAsync(userPosition);
@@ -440,6 +499,7 @@ public class RunningRunFragment extends Fragment {
                         showLoctionAlways = false;
                         mCurPointGraphic.setVisible(true);
                         showLoctionAlways = true;
+                        layoutOfClearPoints.setVisibility(View.GONE);
                         GetShortestRoute();
                     }
                     else if(mFragmentStatus == fragmentStatus.RoutingByDistance)
@@ -478,6 +538,17 @@ public class RunningRunFragment extends Fragment {
                     layoutOfContinueButton.setVisibility(View.GONE);
                     mCurPointGraphic.setVisible(true);
                     showLoctionAlways = true;
+                }
+            });
+        }
+
+        btnClearPoints = (Button)view.findViewById(R.id.btn_clear_points);
+        {
+            btnClearPoints.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    planningRoute.clear();
+                    mPointsOverlay.getGraphics().clear();
                 }
             });
         }
