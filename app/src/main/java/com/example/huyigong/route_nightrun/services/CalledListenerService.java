@@ -26,7 +26,7 @@ public class CalledListenerService extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        Log.i("push_service", "push_service start");
+        Log.i("push_service", "push_service terminal");
         // 创建新线程
         new Thread(new Runnable() {
             @Override
