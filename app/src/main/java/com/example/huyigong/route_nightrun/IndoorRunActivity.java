@@ -57,11 +57,9 @@ import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 public class IndoorRunActivity extends AppCompatActivity {
@@ -444,8 +442,8 @@ public class IndoorRunActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            BitmapDrawable startDraw = (BitmapDrawable) getResources().getDrawable(R.drawable.terminal, null);
-            BitmapDrawable endDraw = (BitmapDrawable) getResources().getDrawable(R.drawable.start, null);
+            BitmapDrawable startDraw = (BitmapDrawable) getResources().getDrawable(R.drawable.start, null);
+            BitmapDrawable endDraw = (BitmapDrawable) getResources().getDrawable(R.drawable.terminal, null);
             Symbol startSymbol = new PictureMarkerSymbol(startDraw);
             Symbol endSymbol = new PictureMarkerSymbol(endDraw);
             ((PictureMarkerSymbol) startSymbol).setWidth(25);
@@ -486,8 +484,8 @@ public class IndoorRunActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            PictureMarkerSymbol startSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.terminal, null));
-            PictureMarkerSymbol endSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.start, null));
+            PictureMarkerSymbol startSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.start, null));
+            PictureMarkerSymbol endSymbol = new PictureMarkerSymbol((BitmapDrawable) getResources().getDrawable(R.drawable.terminal, null));
             startSymbol.setWidth(25);
             startSymbol.setHeight(30);
             startSymbol.setOffsetY(10);

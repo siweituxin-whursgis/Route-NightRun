@@ -10,6 +10,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -25,12 +27,18 @@ import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.esri.arcgisruntime.data.Feature;
+import com.esri.arcgisruntime.data.FeatureCollection;
+import com.esri.arcgisruntime.data.FeatureCollectionTable;
+import com.esri.arcgisruntime.data.Field;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
+import com.esri.arcgisruntime.geometry.GeometryType;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.PointCollection;
 import com.esri.arcgisruntime.geometry.Polyline;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
+import com.esri.arcgisruntime.layers.FeatureCollectionLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
@@ -38,12 +46,20 @@ import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
+import com.esri.arcgisruntime.symbology.Renderer;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
+import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.Symbol;
+import com.example.huyigong.route_nightrun.Substances.DrinksInfo;
+import com.example.huyigong.route_nightrun.Substances.Gym;
+import com.example.huyigong.route_nightrun.Substances.GymsInfo;
 import com.example.huyigong.route_nightrun.helpers.CalculateGeometryApi;
+import com.example.huyigong.route_nightrun.helpers.RouteApi;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -159,9 +175,11 @@ public class RunningRunFragment extends Fragment {
     };
     fragmentStatus mFragmentStatus = fragmentStatus.ShowMap;
     double planningDistance = -1;
+    double userRuningDistance = -1;
     boolean haveGotRoute = false;
     boolean showLoctionAlways = false;
     ArrayList<Point> planningRoute = new ArrayList<Point>();
+    Handler mShowNearDrinksHanler;
 
     LinearLayout layoutOfRoutingButton = null;
     GridLayout layoutOfStartButton = null;
@@ -180,15 +198,17 @@ public class RunningRunFragment extends Fragment {
     GraphicsOverlay mPositionOverlay;
     GraphicsOverlay mLinesOverlay;
     GraphicsOverlay mPolygonsOverlay;
+    GraphicsOverlay mDrinkOverlay;
     GraphicsOverlay mOthersOverlay;
     LocationManager mLocationManager; // 定位服务
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
+    ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
     Point userPosition = null;
     boolean textBool = true;
 
     //用于引用传递
-    private class DoubleReferance{
+    public class DoubleReferance{
         private double mValue;
 
         public  DoubleReferance(double initValue) { mValue = initValue; }
@@ -201,16 +221,39 @@ public class RunningRunFragment extends Fragment {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            if (location != null && textBool)
+            if (location != null)
             {
-                textBool = false;
-//                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
-                userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
+//                userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
                 if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
                 {
                     Point nearestPoint = CalculateGeometryApi.GetNearestPointInPolyLine(planningRoute, userPosition);
-                    if(nearestPoint != null && Math.sqrt((nearestPoint.getX() - userPosition.getX())*(nearestPoint.getX() - userPosition.getX()) - (nearestPoint.getY() - userPosition.getY())*(nearestPoint.getY() - userPosition.getY())) < 50)
+                    Point userPositionMkt = (Point)GeometryEngine.project(userPosition, mMapView.getSpatialReference());
+                    double d = Math.sqrt((nearestPoint.getX() - userPositionMkt.getX())*(nearestPoint.getX() - userPositionMkt.getX()) + (nearestPoint.getY() - userPositionMkt.getY())*(nearestPoint.getY() - userPositionMkt.getY()));
+                    if(nearestPoint != null && d < 50)
                         userPosition = new Point(nearestPoint.getX(), nearestPoint.getY(), nearestPoint.getSpatialReference());
+                    else
+                        Toast.makeText(getContext(), "温馨提醒：当前位置未在预定路线上", Toast.LENGTH_SHORT).show();
+                }
+                if(showLoctionAlways)
+                {
+                    mMapView.setViewpointCenterAsync(userPosition);
+                    mCurPointGraphic.setGeometry(userPosition);
+                    if(planningRoute != null && planningRoute.size() > 1)
+                    {
+                        Point terminal = (Point)GeometryEngine.project(planningRoute.get(planningRoute.size() - 1), SpatialReference.create(3857));
+                        userPosition = (Point)GeometryEngine.project(userPosition, SpatialReference.create(3857));
+                        double d = Math.abs(Math.sqrt((userPosition.getX() - terminal.getX())*(userPosition.getX() - terminal.getX()) + (userPosition.getX() - terminal.getX())*(userPosition.getX() - terminal.getX())));
+                        if(d < 5)
+                        {
+                            final EditText inputServer = new EditText(getContext());
+                            inputServer.setText(userPosition + "m");
+                            inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setTitle("夜跑结束").setIcon(android.R.drawable.ic_dialog_map).setView(inputServer).setPositiveButton("确定", null);
+                            builder.show();
+                        }
+                    }
                 }
                 if(showLoctionAlways)
                 {
@@ -246,28 +289,33 @@ public class RunningRunFragment extends Fragment {
 //       super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_running, container, false);
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        boolean networkOn;
-        try
         {
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-            networkOn = true;
+            boolean networkOn;
+
+            try
+            {
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+                networkOn = true;
+            }
+            catch (SecurityException se)
+            {
+                Toast.makeText(getContext(), "建议开启WiFi提高定位精度", Toast.LENGTH_SHORT).show();
+                networkOn = false;
+            }
+
+            try
+            {
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
+            }
+            catch (SecurityException se)
+            {
+                if(networkOn)
+                    Toast.makeText(getContext(), "无GPS定位功能", Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(getContext(), "无定位服务开启", Toast.LENGTH_SHORT).show();
+            }
         }
-        catch (SecurityException se)
-        {
-            Toast.makeText(getContext(), "建议开启WiFi提高定位精度", Toast.LENGTH_SHORT).show();
-            networkOn = false;
-        }
-        try
-        {
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
-        }
-        catch (SecurityException se)
-        {
-            if(networkOn)
-                Toast.makeText(getContext(), "无GPS定位功能", Toast.LENGTH_SHORT).show();
-            else
-                Toast.makeText(getContext(), "无定位服务开启", Toast.LENGTH_SHORT).show();
-        }
+
         mMapView = (MapView) view.findViewById(R.id.mapView);
         mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
         mPointsOverlay = new GraphicsOverlay();
@@ -275,24 +323,21 @@ public class RunningRunFragment extends Fragment {
         {
             BitmapDrawable pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.boy);
             mCurrentPointSymbol = new PictureMarkerSymbol(pinBitmap);
-            mCurrentPointSymbol.setHeight(20);
-            mCurrentPointSymbol.setWidth(20);
-            // 加载当前点
+            mCurrentPointSymbol.setHeight(40);
+            mCurrentPointSymbol.setWidth(40);
+            mCurrentPointSymbol.setOffsetX(0);
+            mCurrentPointSymbol.setOffsetY(20);
             mCurrentPointSymbol.loadAsync();
             mCurrentPointSymbol.addDoneLoadingListener(new Runnable() {
                 @Override
                 public void run() {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mCurPointGraphic = new Graphic(new Point(mMapView.getPivotX(), mMapView.getY(), SpatialReferences.getWgs84()), mCurrentPointSymbol);
-                            mCurPointGraphic.setVisible(false);
-                            mPositionOverlay.getGraphics().add(mCurPointGraphic);
-                        }
-                    });
+                    mCurPointGraphic = new Graphic(new Point(mMapView.getPivotX(), mMapView.getY(), SpatialReferences.getWgs84()), mCurrentPointSymbol);
+                    mCurPointGraphic.setVisible(false);
+                    mPositionOverlay.getGraphics().add(mCurPointGraphic);
                 }
             });
         }
+
         try
         {
             Thread.sleep(1);
@@ -301,12 +346,15 @@ public class RunningRunFragment extends Fragment {
         {
             ex.printStackTrace();
         }
+
         mLinesOverlay = new GraphicsOverlay();
         mPolygonsOverlay = new GraphicsOverlay();
         mOthersOverlay = new GraphicsOverlay();
+        mDrinkOverlay = new GraphicsOverlay();
         mMapView.getGraphicsOverlays().add(mPolygonsOverlay);
         mMapView.getGraphicsOverlays().add(mLinesOverlay);
         mMapView.getGraphicsOverlays().add(mPointsOverlay);
+        mMapView.getGraphicsOverlays().add(mDrinkOverlay);
         mMapView.getGraphicsOverlays().add(mOthersOverlay);
         mMapView.getGraphicsOverlays().add(mPositionOverlay);
         mMapView.setMap(mArcGISMap);
@@ -328,20 +376,6 @@ public class RunningRunFragment extends Fragment {
             @Override
             public boolean onDoubleTap(MotionEvent event)
             {
-                userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
-                if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
-                {
-                    Point nearestPoint = CalculateGeometryApi.GetNearestPointInPolyLine(planningRoute, userPosition);
-                    Point userPositionMkt = (Point)GeometryEngine.project(userPosition, mMapView.getSpatialReference());
-                    double d = Math.sqrt((nearestPoint.getX() - userPositionMkt.getX())*(nearestPoint.getX() - userPositionMkt.getX()) + (nearestPoint.getY() - userPositionMkt.getY())*(nearestPoint.getY() - userPositionMkt.getY()));
-                    if(nearestPoint != null && d < 50)
-                        userPosition = new Point(nearestPoint.getX(), nearestPoint.getY(), nearestPoint.getSpatialReference());
-                }
-                if(showLoctionAlways)
-                {
-                    mMapView.setViewpointCenterAsync(userPosition);
-                    mCurPointGraphic.setGeometry(userPosition);
-                }
                 return false;
             }
         });
@@ -379,10 +413,10 @@ public class RunningRunFragment extends Fragment {
                         return;
                     }
                     final EditText inputServer = new EditText(getContext());
-                    inputServer.setHint("夜跑距离");
+                    inputServer.setHint("往返总距离");
                     inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
                     final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle("请输入夜跑距离").setIcon(android.R.drawable.ic_dialog_map).setView(inputServer).setNegativeButton("取消", null);
+                    builder.setTitle("请输入夜跑总距离").setIcon(android.R.drawable.ic_dialog_map).setView(inputServer).setNegativeButton("取消", null);
                     builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             try
@@ -396,6 +430,7 @@ public class RunningRunFragment extends Fragment {
                                 }
                                 else
                                 {
+                                    userRuningDistance = planningDistance / 2;
                                     layoutOfRoutingButton.setVisibility(View.GONE);
                                     layoutOfStartButton.setVisibility(View.VISIBLE);
                                     mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
@@ -404,7 +439,7 @@ public class RunningRunFragment extends Fragment {
                                     mCurPointGraphic.setVisible(true);
                                     btnStart.setText("获取路径...");
                                     btnStart.setEnabled(false);
-                                    Toast.makeText(getContext(), "本方法较为耗时，请耐心等待", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "本方法较为耗时，请耐心等待", Toast.LENGTH_LONG).show();
                                     Thread t = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -424,7 +459,10 @@ public class RunningRunFragment extends Fragment {
                                                 }
                                             });
                                             planningRoute = points;
-                                            DrawRoute(points, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 3));
+                                            DrawPoint(points.get(0), R.drawable.start, 22, 33, 0, (float)13.5);
+                                            DrawPoint(points.get(points.size() - 1), R.drawable.terminal, 22, 33, 0, (float)13.5);
+                                            DrawRoute(points, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3));
+                                            ShowNearDrinks();
                                             mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
                                         }
                                     });
@@ -553,6 +591,49 @@ public class RunningRunFragment extends Fragment {
             });
         }
 
+        mShowNearDrinksHanler = new android.os.Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                try
+                {
+                    String response = ((Bundle)msg.getData()).getString("NearDrinks");
+                    JSONTokener jsonParser = new JSONTokener(response);
+                    JSONObject json = (JSONObject)jsonParser.nextValue();
+                    JSONArray neardrinksArray = json.getJSONArray("neardrinks");
+                    for(int i=0;i<neardrinksArray.length();i++)
+                    {
+                        JSONObject tempDrink = (JSONObject) neardrinksArray.get(i);
+                        int drinkId = tempDrink.getInt("DrinkID");
+                        String drinkName = tempDrink.getString("DrinkName");
+                        final double drinkLng = tempDrink.getDouble("DrinkLng");
+                        final double drinkLat = tempDrink.getDouble("DrinkLat");
+                        final DrinksInfo di = new DrinksInfo(drinkId, drinkName, drinkLng, drinkLat);
+
+                        BitmapDrawable pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.drink);
+                        final PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol(pinBitmap);
+                        pictureMarkerSymbol.setHeight(40);
+                        pictureMarkerSymbol.setWidth(40);
+                        pictureMarkerSymbol.setOffsetX(0);
+                        pictureMarkerSymbol.setOffsetY(20);
+                        pictureMarkerSymbol.loadAsync();
+                        pictureMarkerSymbol.addDoneLoadingListener(new Runnable() {
+                            @Override
+                            public void run() {
+                                drinkList.add(di);
+                                Graphic g = new Graphic(new Point(drinkLng, drinkLat, SpatialReferences.getWgs84()), pictureMarkerSymbol);
+                                mDrinkOverlay.getGraphics().add(g);
+                            }
+                        });
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Toast.makeText(getContext(), "获取饮品店位置失败", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
         return view;
     }
 
@@ -596,7 +677,7 @@ public class RunningRunFragment extends Fragment {
                 int index = 0;
                 for(Point tempPoint : pointForRoutePlanning)
                 {
-                    if((distanceOfAllRoutes[index++] = GetDistanceOfShortestRoute(point, tempPoint)) == -1)
+                    if((distanceOfAllRoutes[index++] = RouteApi.GetDistanceOfShortestRoute(point, tempPoint)) == -1)
                     {
                         Toast.makeText(getActivity(), "网络错误，路径规划失败", Toast.LENGTH_LONG).show();
                         return null;
@@ -616,8 +697,9 @@ public class RunningRunFragment extends Fragment {
                     }
                 }
             }
-
-            ArrayList<Point> pointsArrayList = GetShortestRoute(point, pointForRoutePlanning.get(indexOfNeareatRoute), null);
+            DoubleReferance df = new DoubleReferance(0);
+            ArrayList<Point> pointsArrayList = RouteApi.GetShortestRoute(point, pointForRoutePlanning.get(indexOfNeareatRoute), df);
+            userRuningDistance = df.getValue();
             ArrayList<Point> resultPoints = new ArrayList<Point>();
             resultPoints.add(pointGps);
             for(Point tempPoint : pointsArrayList)
@@ -701,7 +783,7 @@ public class RunningRunFragment extends Fragment {
                 }
                 stops.add((Point)GeometryEngine.project(userPosition, mMapView.getSpatialReference()));
                 stopPointsForShortestRoute.clear();
-                ArrayList<Point> points = GetShortestRoute(stops, dr);
+                ArrayList<Point> points = RouteApi.GetShortestRoute(stops, dr);
                 if(points == null)
                 {
                     Toast.makeText(getActivity(), "获取路径失败，请检查网络状态或定位服务", Toast.LENGTH_LONG).show();
@@ -718,7 +800,8 @@ public class RunningRunFragment extends Fragment {
                 resultPooints.add(userPosition);
                 planningRoute = resultPooints;
 
-                DrawRoute(resultPooints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.RED, 4));
+                DrawRoute(resultPooints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3));
+                ShowNearDrinks();
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -736,181 +819,37 @@ public class RunningRunFragment extends Fragment {
         t.start();
     }
 
-    @Nullable
-    private ArrayList<Point> GetShortestRoute(Point start, Point end, @Nullable DoubleReferance distance)
-    {
-        ArrayList<Point> pointsArrayList = new ArrayList<Point>();
-        try
-        {
-            start = (Point)GeometryEngine.project(start, SpatialReference.create(4326));
-            end = (Point)GeometryEngine.project(end, SpatialReference.create(4326));
-            //ArcGIS最短路径服务
-//            String urlString = "https://utility.arcgis.com/usrsvcs/appservices/7lLQlGpstsTR8hpm/rest/services/World/Route/NAServer/Route_World/solve?token=OU0KQBwzj2vm3AV7EvTzWMtwkFRK0VxLkWiZKT6TwQoRIr1mEIESvPHP50ufoQAJ-qhiEne93ThUi5rxvHFMSMULBt5qb2CEpu05EDMjKagstbDxK7sCj4qrAEJywpq70qxEPPQfHOirXv2Umol21w..&f=json&stops=114,30;114.5,31";
-            //graphhopper最短路径服务
-            String urlString = "https://graphhopper.com/api/1/route?point=" + start.getY() + "," + start.getX() + "&point=" + end.getY() + "," + end.getX() + "&vehicle=foot&debug=false&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
-            HttpURLConnection connection = null;
-            {
-                URL url = new URL(urlString);
-                connection=(HttpURLConnection)url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(10000);
-                connection.setReadTimeout(4000);
-            }
-            InputStream in = connection.getInputStream();
-            BufferedReader bufr = new BufferedReader(new InputStreamReader(in));
-            String response = "";
-            String line = "";
-            while((line = bufr.readLine()) != null){
-                response += line;
-            }
-            JSONTokener jsonParser = new JSONTokener(response);
-            JSONObject json = (JSONObject)jsonParser.nextValue();
-            JSONObject pathsJsonObject = ((JSONObject)json.getJSONArray("paths").get(0));
-            JSONArray pointsArray = pathsJsonObject.getJSONObject("points").getJSONArray("coordinates");
-
-            int count = pointsArray.length();
-            for(int i=0;i<count;i++)
-            {
-                JSONArray pointJsonArray = (JSONArray) pointsArray.get(i);
-                Double lng = pointJsonArray.getDouble(0);
-                Double lat = pointJsonArray.getDouble(1);
-
-                pointsArrayList.add(new Point(lng, lat, SpatialReferences.getWgs84()));
-            }
-            if(distance != null)
-                distance.setValue(pathsJsonObject.getDouble("distance"));
-
-            return  pointsArrayList;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    @Nullable
-    private ArrayList<Point> GetShortestRoute(ArrayList<Point> stopPoints, @Nullable DoubleReferance distance)
-    {
-        ArrayList<Point> pointsArrayList = new ArrayList<Point>();
-        ArrayList<Point> stopPointsWgs84 = new ArrayList<Point>();
-        try
-        {
-            for(int i=0;i<stopPoints.size();i++)
-            {
-                stopPointsWgs84.add((Point)GeometryEngine.project(stopPoints.get(i), SpatialReference.create(4326)));
-            }
-            //ArcGIS最短路径服务
-//            String urlString = "https://utility.arcgis.com/usrsvcs/appservices/7lLQlGpstsTR8hpm/rest/services/World/Route/NAServer/Route_World/solve?token=OU0KQBwzj2vm3AV7EvTzWMtwkFRK0VxLkWiZKT6TwQoRIr1mEIESvPHP50ufoQAJ-qhiEne93ThUi5rxvHFMSMULBt5qb2CEpu05EDMjKagstbDxK7sCj4qrAEJywpq70qxEPPQfHOirXv2Umol21w..&f=json&stops=114,30;114.5,31";
-            //graphhopper最短路径服务
-            String baseUrlString = "https://graphhopper.com/api/1/route";
-            String pointParamString = "";
-            {
-                for(int i=0;i<stopPoints.size();i++)
-                {
-                    pointParamString += "point=" + (stopPointsWgs84.get(i).getY() + "," + stopPointsWgs84.get(i).getX() + "&");
-                }
-            }
-            String othersParamString = "vehicle=foot&debug=false&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
-            String urlString = baseUrlString + "?" + pointParamString + othersParamString;
-            HttpURLConnection connection = null;
-            URL url = new URL(urlString);
-            connection=(HttpURLConnection)url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(4000);
-            InputStream in = connection.getInputStream();
-            BufferedReader bufr = new BufferedReader(new InputStreamReader(in));
-            String response = "";
-            String line = "";
-            while((line = bufr.readLine()) != null){
-                response += line;
-            }
-            JSONTokener jsonParser = new JSONTokener(response);
-            JSONObject json = (JSONObject)jsonParser.nextValue();
-            JSONObject pathsJsonObject = ((JSONObject)json.getJSONArray("paths").get(0));
-            JSONArray pointsArray = pathsJsonObject.getJSONObject("points").getJSONArray("coordinates");
-
-            int count = pointsArray.length();
-            for(int i=0;i<count;i++)
-            {
-                JSONArray pointJsonArray = (JSONArray) pointsArray.get(i);
-                Double lng = pointJsonArray.getDouble(0);
-                Double lat = pointJsonArray.getDouble(1);
-
-                pointsArrayList.add(new Point(lng, lat, SpatialReferences.getWgs84()));
-            }
-            if(distance != null)
-                distance.setValue(pathsJsonObject.getDouble("distance"));
-
-            return  pointsArrayList;
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    private double GetDistanceOfShortestRoute(Point start, Point end)
-    {
-        double distance = -1;
-        try
-        {
-            start = (Point)GeometryEngine.project(start, SpatialReference.create(4326));
-            end = (Point)GeometryEngine.project(end, SpatialReference.create(4326));
-            //ArcGIS最短路径服务
-//            String urlString = "https://utility.arcgis.com/usrsvcs/appservices/7lLQlGpstsTR8hpm/rest/services/World/Route/NAServer/Route_World/solve?token=OU0KQBwzj2vm3AV7EvTzWMtwkFRK0VxLkWiZKT6TwQoRIr1mEIESvPHP50ufoQAJ-qhiEne93ThUi5rxvHFMSMULBt5qb2CEpu05EDMjKagstbDxK7sCj4qrAEJywpq70qxEPPQfHOirXv2Umol21w..&f=json&stops=114,30;114.5,31";
-            //graphhopper最短路径服务
-            String urlString = "https://graphhopper.com/api/1/route?point=" + start.getY() + "," + start.getX() + "&point=" + end.getY() + "," + end.getX() + "&vehicle=foot&debug=false&key=f8821850-c1f8-4f8f-befb-f976c887ebfb&type=json&points_encoded=false";
-            HttpURLConnection connection = null;
-            URL url = new URL(urlString);
-            connection=(HttpURLConnection)url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(4000);
-            InputStream in = connection.getInputStream();
-            BufferedReader bufr = new BufferedReader(new InputStreamReader(in));
-            String response = "";
-            String line = "";
-            while((line = bufr.readLine()) != null){
-                response += line;
-            }
-            JSONTokener jsonParser = new JSONTokener(response);
-            JSONObject json = (JSONObject)jsonParser.nextValue();
-            JSONObject pathsJsonObject = ((JSONObject)json.getJSONArray("paths").get(0));
-            distance = pathsJsonObject.getDouble("distance");
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        finally
-        {
-            return distance;
-        }
-    }
-
     private void DrawRoute(ArrayList<Point> pointsList, Symbol symbol)
     {
         try
         {
             PointCollection pointCollection = new PointCollection(pointsList);
-            Polyline path = new Polyline(pointCollection, SpatialReference.create(4326));
-            final Graphic graphic = new Graphic(path, symbol);
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mLinesOverlay.getGraphics().add(graphic);
-                }
-            });
+            Polyline path = new Polyline(pointCollection, SpatialReference.create(4326));Graphic graphic = new Graphic(path, symbol);
+            mLinesOverlay.getGraphics().add(graphic);
         }
-
         catch (Exception ex)
         {
             ex.printStackTrace();
         }
+    }
 
+    private void DrawPoint(final Point point, int imageId, float width, float height, float offsetX, float offsetY )
+    {
+        BitmapDrawable pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), imageId);
+        final PictureMarkerSymbol pictureMarkerSymbol  = new PictureMarkerSymbol(pinBitmap);
+        pictureMarkerSymbol.setWidth(width);
+        pictureMarkerSymbol.setHeight(height);
+        pictureMarkerSymbol.setOffsetX(offsetX);
+        pictureMarkerSymbol.setOffsetY(offsetY);
+        pictureMarkerSymbol.loadAsync();
+        pictureMarkerSymbol.addDoneLoadingListener(new Runnable() {
+            @Override
+            public void run() {
+                Graphic graphic = new Graphic();
+                graphic = new Graphic(point, pictureMarkerSymbol);
+                mPointsOverlay.getGraphics().add(graphic);
+            }
+        });
     }
 
     private void InitFragment()
@@ -930,8 +869,46 @@ public class RunningRunFragment extends Fragment {
                 showLoctionAlways = false;
                 mPointsOverlay.getGraphics().clear();
                 mLinesOverlay.getGraphics().clear();
+                mDrinkOverlay.getGraphics().clear();
+                drinkList.clear();
                 planningRoute.clear();
             }
         });
+    }
+
+    private void ShowNearDrinks()
+    {
+        Thread showNearDrinkThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_neardrinks) + "?minLng=-180&maxLng=180&minLat=-90&maxLat=90");
+//                                                        http://localhost:4521/api/neardrinks?minLng=-180&maxLng=180&minLat=-90&maxLat=30.52888
+//                    URL url = new URL("http://localhost:4521/" + getString(R.string.webapi_root) + getString(R.string.webapi_neardrinks) + "?minLng=-180&maxLng=180&minLat=-90&maxLat=90");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(10000);
+                    connection.setReadTimeout(4000);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String content = reader.readLine();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("NearDrinks", content);
+                    Message message = new Message();
+                    message.setData(bundle);
+                    mShowNearDrinksHanler.sendMessage(message);
+                }
+                catch (Exception e)
+                {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getContext(), "获取饮品店位置失败", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
+        showNearDrinkThread.start();
     }
 }
