@@ -6,7 +6,7 @@
     tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <com.esri.arcgisruntime.mapping.view.MapView
-        android:id="@+id/mapView"
+        android:id="@+id/mapView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:visibility="visible"/>

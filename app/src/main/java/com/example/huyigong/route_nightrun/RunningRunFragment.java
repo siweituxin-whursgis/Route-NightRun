@@ -28,18 +28,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.esri.arcgisruntime.data.Feature;
-import com.esri.arcgisruntime.data.FeatureCollection;
-import com.esri.arcgisruntime.data.FeatureCollectionTable;
-import com.esri.arcgisruntime.data.Field;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
-import com.esri.arcgisruntime.geometry.GeometryType;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.PointCollection;
 import com.esri.arcgisruntime.geometry.Polyline;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
-import com.esri.arcgisruntime.layers.FeatureCollectionLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
@@ -47,17 +41,11 @@ import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
-import com.esri.arcgisruntime.symbology.Renderer;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
-import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
-import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.Symbol;
 import com.example.huyigong.route_nightrun.Substances.DrinksInfo;
-import com.example.huyigong.route_nightrun.Substances.Gym;
-import com.example.huyigong.route_nightrun.Substances.GymsInfo;
 import com.example.huyigong.route_nightrun.helpers.CalculateGeometryApi;
 import com.example.huyigong.route_nightrun.helpers.RouteApi;
-import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -65,20 +53,14 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -171,6 +153,8 @@ public class RunningRunFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    public int UserId = 39;
+
     enum fragmentStatus{
         ShowMap,
         RoutingByDistance_Unstart,
@@ -213,10 +197,12 @@ public class RunningRunFragment extends Fragment {
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
-    Point userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+    Point userPosition = null;
 
     long startTimeMiliseconds = 0;
     long endTimeMiliseconds = 0;
+
+    final boolean DEBUG = false;
 
     //用于引用传递
     public class DoubleReferance{
@@ -232,20 +218,23 @@ public class RunningRunFragment extends Fragment {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            if (location != null && false)
+            if(DEBUG)
+                return;
+            if (location != null)
             {
 //                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
 //                userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
+
                 Point lastPoint;
                 if(userPosition == null)
                 {
-                    userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                    userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
                     lastPoint = userPosition;
                 }
                 else
                 {
-                    lastPoint = userPosition;
-                    userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                    lastPoint = new Point(userPosition.getX(), userPosition.getY(), userPosition.getSpatialReference());
+                    userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
                 }
 
                 if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
@@ -298,7 +287,6 @@ public class RunningRunFragment extends Fragment {
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         {
             boolean networkOn;
-
             try
             {
                 mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
@@ -323,7 +311,7 @@ public class RunningRunFragment extends Fragment {
             }
         }
 
-        mMapView = (MapView) view.findViewById(R.id.mapView);
+        mMapView = (MapView) view.findViewById(R.id.mapView1);
         mArcGISMap = new ArcGISMap(Basemap.Type.OPEN_STREET_MAP, 30.541093, 114.360734, 16);
         mPointsOverlay = new GraphicsOverlay();
         mPositionOverlay = new GraphicsOverlay();
@@ -382,6 +370,8 @@ public class RunningRunFragment extends Fragment {
             @Override
             public boolean onDoubleTap(MotionEvent event)
             {
+                if(!DEBUG)
+                    return false;
                 Point lastPoint;
                 if(userPosition == null)
                 {
@@ -558,6 +548,7 @@ public class RunningRunFragment extends Fragment {
                     layoutOfStartButton.setVisibility(View.VISIBLE);
                     layoutOfClearPoints.setVisibility(View.VISIBLE);
                     layoutOfReturnInit.setVisibility(View.VISIBLE);
+                    btnStart.setText("开始夜跑");
                     mFragmentStatus = fragmentStatus.RoutingByStops_Unstart;
                     stopPointsForShortestRoute.clear();
                     mMapView.setViewpointCenterAsync(userPosition);
@@ -583,6 +574,7 @@ public class RunningRunFragment extends Fragment {
                         mCurPointGraphic.setGeometry(userPosition);
                         mFragmentStatus = fragmentStatus.RoutingByDistance;
                         btnStart.setText("暂停");
+                        startTimeMiliseconds = System.currentTimeMillis();
                         mCurPointGraphic.setVisible(true);
                         showLoctionAlways = true;
                     }
@@ -632,7 +624,7 @@ public class RunningRunFragment extends Fragment {
                         builder.setTitle("夜跑结束").setIcon(android.R.drawable.ic_dialog_map).setView(textView).setPositiveButton("确定", null);
                         builder.show();
                         endTimeMiliseconds = System.currentTimeMillis();
-                        UploadRunningInfo(5, planningRoute, userRuningDistance, startTimeMiliseconds, endTimeMiliseconds);
+                        UploadRunningInfo(UserId, planningRoute, userRuningDistance, planningDistance, startTimeMiliseconds, endTimeMiliseconds);
 
                         InitFragment();
                     }
@@ -769,6 +761,7 @@ public class RunningRunFragment extends Fragment {
                 ShowToast("无适合您当前位置的路径规划", Toast.LENGTH_LONG);
                 return null;
             }
+            pointGps = (Point)GeometryEngine.project(pointGps, SpatialReferences.getWgs84());
             Point point = (Point)GeometryEngine.project(pointGps, mMapView.getSpatialReference());
             Point leftTop = new Point(point.getX() - lengthOfRouth, point.getY() - lengthOfRouth, point.getSpatialReference());
             Point rightButtom = new Point(point.getX() + lengthOfRouth, point.getY() + lengthOfRouth, point.getSpatialReference());
@@ -827,6 +820,7 @@ public class RunningRunFragment extends Fragment {
             }
             DoubleReferance df = new DoubleReferance(0);
             ArrayList<Point> pointsArrayList = RouteApi.GetShortestRoute(point, pointForRoutePlanning.get(indexOfNeareatRoute), df);
+            planningDistance = df.getValue();
             ArrayList<Point> resultPoints = new ArrayList<Point>();
             resultPoints.add(pointGps);
             for(Point tempPoint : pointsArrayList)
@@ -925,13 +919,14 @@ public class RunningRunFragment extends Fragment {
                     return;
                 }
 
+                planningDistance = dr.getValue();
                 ArrayList<Point> resultPooints = new ArrayList<Point>();
-                resultPooints.add(userPosition);
+                resultPooints.add((Point)GeometryEngine.project(userPosition, SpatialReferences.getWgs84()));
                 for(Point tempPoint : points)
                 {
                     resultPooints.add(tempPoint);
                 }
-                resultPooints.add(userPosition);
+                resultPooints.add((Point)GeometryEngine.project(userPosition, SpatialReferences.getWgs84()));
                 planningRoute = resultPooints;
 
                 DrawRoute(resultPooints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3));
@@ -978,12 +973,14 @@ public class RunningRunFragment extends Fragment {
         try
         {
             PointCollection pointCollection = new PointCollection(pointsList);
-            Polyline path = new Polyline(pointCollection, SpatialReference.create(4326));Graphic graphic = new Graphic(path, symbol);
+            Polyline path = new Polyline(pointCollection, SpatialReference.create(4326));
+            Graphic graphic = new Graphic(path, symbol);
             mLinesOverlay.getGraphics().add(graphic);
         }
         catch (Exception ex)
         {
-            ex.printStackTrace();
+            ShowToast("绘制路径失败", Toast.LENGTH_LONG);
+            InitFragment();
         }
     }
 
@@ -1080,7 +1077,7 @@ public class RunningRunFragment extends Fragment {
         showNearDrinkThread.start();
     }
 
-    private JSONObject GenerateRouteJson(int userId, ArrayList<Point> pointsList, double distanceOfRoute, long during)
+    private JSONObject GenerateRouteJson(int userId, ArrayList<Point> pointsList, double distanceOfRoute, double distanceOfUserRunning, long during)
     {
         try
         {
@@ -1098,6 +1095,7 @@ public class RunningRunFragment extends Fragment {
             routeSubInfo.put("UserId", userId);
             routeSubInfo.put("DateTime", new Timestamp(System.currentTimeMillis()));
             routeSubInfo.put("Distance", distanceOfRoute);
+            routeSubInfo.put("UserRunningDistance", distanceOfUserRunning);
             routeSubInfo.put("During", during);
             routeSubInfo.put("Path", pathArray);
             routeInfo.put("RouteInfo", routeSubInfo);
@@ -1111,11 +1109,16 @@ public class RunningRunFragment extends Fragment {
         }
     }
 
-    private boolean UploadRunningInfo(int id, ArrayList<Point> pointsList, double distanceOfRoute, long start, long end)
+    private boolean UploadRunningInfo(int id, ArrayList<Point> pointsList, double distanceOfRoute, double distanceOfUserRunning, long start, long end)
     {
+        if(distanceOfRoute < 200)
+        {
+            ShowToast("本次跑步距离过短，将不上传数据库", Toast.LENGTH_SHORT);
+            return false;
+        }
         final int userId = id;
-        final long during = end - start;
-        final JSONObject routeInfo = GenerateRouteJson(userId, pointsList, distanceOfRoute, during);
+        final long during = (end - start) / 1000;
+        final JSONObject routeInfo = GenerateRouteJson(userId, pointsList, distanceOfRoute, distanceOfUserRunning, during);
 
         new Thread(new Runnable() {
             @Override
