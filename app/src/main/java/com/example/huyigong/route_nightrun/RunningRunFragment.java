@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.esri.arcgisruntime.data.Feature;
@@ -75,6 +76,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -179,7 +181,7 @@ public class RunningRunFragment extends Fragment {
     };
     fragmentStatus mFragmentStatus = fragmentStatus.ShowMap;
     double planningDistance = -1;
-    double userRuningDistance = -1;
+    double userRuningDistance = 0;
     boolean haveGotRoute = false;
     boolean showLoctionAlways = false;
     ArrayList<Point> planningRoute = new ArrayList<Point>();
@@ -190,11 +192,13 @@ public class RunningRunFragment extends Fragment {
     GridLayout layoutOfStartButton = null;
     GridLayout layoutOfContinueButton = null;
     GridLayout layoutOfClearPoints = null;
+    GridLayout layoutOfReturnInit = null;
     Button btnRoutingByDistance = null;
     Button btnRoutingByStops= null;
     Button btnStart = null;
     Button btnContinue = null;
     Button btnClearPoints = null;
+    Button btnReturnInit = null;
     MapView mMapView;   // 地图
     ArcGISMap mArcGISMap;
     Graphic mCurPointGraphic; // 当前点
@@ -209,8 +213,10 @@ public class RunningRunFragment extends Fragment {
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
-    Point userPosition = null;
-    boolean testBool = true;
+    Point userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+
+    long startTimeMiliseconds = 0;
+    long endTimeMiliseconds = 0;
 
     //用于引用传递
     public class DoubleReferance{
@@ -226,12 +232,22 @@ public class RunningRunFragment extends Fragment {
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            if (location != null && testBool)
+            if (location != null && false)
             {
-                testBool = false;
 //                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
 //                userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
-                userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                Point lastPoint;
+                if(userPosition == null)
+                {
+                    userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                    lastPoint = userPosition;
+                }
+                else
+                {
+                    lastPoint = userPosition;
+                    userPosition = new Point(114.364, 30.534, SpatialReference.create(4326));
+                }
+
                 if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
                 {
                     Point nearestPoint = CalculateGeometryApi.GetNearestPointInPolyLine(planningRoute, userPosition);
@@ -240,37 +256,21 @@ public class RunningRunFragment extends Fragment {
                     if(nearestPoint != null && d < 50)
                         userPosition = new Point(nearestPoint.getX(), nearestPoint.getY(), nearestPoint.getSpatialReference());
                     else
-                        Toast.makeText(getContext(), "温馨提醒：当前位置未在预定路线上", Toast.LENGTH_SHORT).show();
+                        ShowToast("温馨提醒：当前位置未在预定路线上", Toast.LENGTH_SHORT);
                 }
                 if(showLoctionAlways)
                 {
                     mMapView.setViewpointCenterAsync(userPosition);
                     mCurPointGraphic.setGeometry(userPosition);
-                    if(planningRoute != null && planningRoute.size() > 1)
-                    {
-                        Point terminal = (Point)GeometryEngine.project(planningRoute.get(planningRoute.size() - 1), SpatialReference.create(3857));
-                        userPosition = (Point)GeometryEngine.project(userPosition, SpatialReference.create(3857));
-                        double d = Math.abs(Math.sqrt((userPosition.getX() - terminal.getX())*(userPosition.getX() - terminal.getX()) + (userPosition.getX() - terminal.getX())*(userPosition.getX() - terminal.getX())));
-                        if(d < 5)
-                        {
-                            final EditText inputServer = new EditText(getContext());
-                            inputServer.setText(userRuningDistance + "m");
-                            inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
-                            final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle("夜跑结束").setIcon(android.R.drawable.ic_dialog_map).setView(inputServer).setPositiveButton("确定", null);
-                            builder.show();
-                        }
-                    }
-                }
-                if(showLoctionAlways)
-                {
-                    mMapView.setViewpointCenterAsync(userPosition);
-                    mCurPointGraphic.setGeometry(userPosition);
+                    Point p1 = (Point)GeometryEngine.project(userPosition, SpatialReference.create(3857));
+                    Point p2 = (Point)GeometryEngine.project(lastPoint, SpatialReference.create(3857));
+                    double d = RouteApi.GetDistanceOfTwoPoint(p1, p2);
+                    userRuningDistance += d;
                 }
             }
             else
             {
-//                Toast.makeText(getContext(), "位置获取出错", Toast.LENGTH_LONG).show();
+//                ShowToast("位置获取出错", Toast.LENGTH_LONG);
             }
         }
 
@@ -382,8 +382,18 @@ public class RunningRunFragment extends Fragment {
             @Override
             public boolean onDoubleTap(MotionEvent event)
             {
-//                userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
-                userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
+                Point lastPoint;
+                if(userPosition == null)
+                {
+                    userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
+                    lastPoint = userPosition;
+                }
+                else
+                {
+                    lastPoint = new Point(userPosition.getX(), userPosition.getY(), userPosition.getSpatialReference());
+                    userPosition = (Point)GeometryEngine.project(mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY())), SpatialReference.create(4326));
+                }
+
                 if((mFragmentStatus == fragmentStatus.RoutingByStops || mFragmentStatus == fragmentStatus.RoutingByDistance) && planningRoute != null && planningRoute.size() > 1)
                 {
                     Point nearestPoint = CalculateGeometryApi.GetNearestPointInPolyLine(planningRoute, userPosition);
@@ -392,39 +402,24 @@ public class RunningRunFragment extends Fragment {
                     if(nearestPoint != null && d < 50)
                         userPosition = new Point(nearestPoint.getX(), nearestPoint.getY(), nearestPoint.getSpatialReference());
                     else
-                        Toast.makeText(getContext(), "温馨提醒：当前位置未在预定路线上", Toast.LENGTH_SHORT).show();
+                        ShowToast("温馨提醒：当前位置未在预定路线上", Toast.LENGTH_SHORT);
                 }
                 if(showLoctionAlways)
                 {
                     mMapView.setViewpointCenterAsync(userPosition);
                     mCurPointGraphic.setGeometry(userPosition);
-                    if(planningRoute != null && planningRoute.size() > 1)
-                    {
-                        Point terminal = (Point)GeometryEngine.project(planningRoute.get(planningRoute.size() - 1), SpatialReference.create(3857));
-                        userPosition = (Point)GeometryEngine.project(userPosition, SpatialReference.create(3857));
-                        double d = Math.abs(Math.sqrt((userPosition.getX() - terminal.getX())*(userPosition.getX() - terminal.getX()) + (userPosition.getX() - terminal.getX())*(userPosition.getX() - terminal.getX())));
-                        if(d < 5 && false)
-                        {
-                            final EditText inputServer = new EditText(getContext());
-                            inputServer.setText(userRuningDistance + "m");
-                            inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
-                            final AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle("夜跑结束").setIcon(android.R.drawable.ic_dialog_map).setView(inputServer).setPositiveButton("确定", null);
-                            builder.show();
-                        }
-                    }
-                }
-                if(showLoctionAlways)
-                {
-                    mMapView.setViewpointCenterAsync(userPosition);
-                    mCurPointGraphic.setGeometry(userPosition);
+                    Point p1 = (Point)GeometryEngine.project(userPosition, SpatialReference.create(3857));
+                    Point p2 = (Point)GeometryEngine.project(lastPoint, SpatialReference.create(3857));
+                    double d = RouteApi.GetDistanceOfTwoPoint(p1, p2);
+                    userRuningDistance += d;
                 }
                 return false;
             }
         });
 
-        GenerateEndPoinrsFromFile();
-//        GenerateEndPoinrsFromMySql();
+//        GenerateEndPoinrsFromFile();
+        GenerateEndPoinrsFromMySql(new Point(114, 31, SpatialReferences.getWgs84()), new Point(115, 30, SpatialReferences.getWgs84()));
+
         layoutOfRoutingButton = (LinearLayout)view.findViewById(R.id.layout_routing);
         {
             layoutOfRoutingButton.setVisibility(View.VISIBLE);
@@ -440,6 +435,11 @@ public class RunningRunFragment extends Fragment {
             layoutOfStartButton.setVisibility(View.GONE);
         }
 
+        layoutOfReturnInit = (GridLayout) view.findViewById(R.id.layout_return_Init);
+        {
+            layoutOfReturnInit.setVisibility(View.GONE);
+        }
+
         layoutOfClearPoints = (GridLayout) view.findViewById(R.id.layout_clear_points);
         {
             layoutOfClearPoints.setVisibility(View.GONE);
@@ -452,7 +452,7 @@ public class RunningRunFragment extends Fragment {
                 public void onClick(View view) {
                     if(userPosition == null)
                     {
-                        Toast.makeText(getContext(), "获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT).show();
+                        ShowToast("获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT);
                         return;
                     }
                     final EditText inputServer = new EditText(getContext());
@@ -468,12 +468,11 @@ public class RunningRunFragment extends Fragment {
                                 if(planningDistance > 5000 || planningDistance < 500)
                                 {
                                     planningDistance = 0;
-                                    Toast.makeText(getContext(), "输入有效值为500~5000，请重新输入", Toast.LENGTH_LONG).show();
+                                    ShowToast("输入有效值为500~5000，请重新输入", Toast.LENGTH_SHORT);
                                     return;
                                 }
                                 else
                                 {
-                                    userRuningDistance = planningDistance / 2;
                                     layoutOfRoutingButton.setVisibility(View.GONE);
                                     layoutOfStartButton.setVisibility(View.VISIBLE);
                                     mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
@@ -482,14 +481,14 @@ public class RunningRunFragment extends Fragment {
                                     mCurPointGraphic.setVisible(true);
                                     btnStart.setText("获取路径...");
                                     btnStart.setEnabled(false);
-                                    Toast.makeText(getContext(), "本方法较为耗时，请耐心等待", Toast.LENGTH_LONG).show();
+                                    ShowToast("本方法较为耗时，请耐心等待", Toast.LENGTH_LONG);
                                     Thread t = new Thread(new Runnable() {
                                         @Override
                                         public void run() {
                                             ArrayList<Point> points =  GenerateRouteByDistance(userPosition, planningDistance / 2);
-                                            if(points == null)
+                                            if(points == null || points.size() < 2)
                                             {
-                                                Toast.makeText(getContext(), "路径规划失败", Toast.LENGTH_LONG).show();
+                                                ShowToast("路径规划失败", Toast.LENGTH_SHORT);
                                                 InitFragment();
                                                 return;
                                             }
@@ -498,14 +497,33 @@ public class RunningRunFragment extends Fragment {
                                                 public void run() {
                                                     btnStart.setText("开始夜跑");
                                                     btnStart.setEnabled(true);
-                                                    Toast.makeText(getContext(), "点击开始夜跑启动实时定位", Toast.LENGTH_SHORT).show();
+                                                    ShowToast("点击开始夜跑启动实时定位", Toast.LENGTH_SHORT);
                                                 }
                                             });
                                             planningRoute = points;
                                             DrawPoint(points.get(0), R.drawable.start, 22, 33, 0, (float)13.5);
                                             DrawPoint(points.get(points.size() - 1), R.drawable.terminal, 22, 33, 0, (float)13.5);
                                             DrawRoute(points, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3));
-                                            ShowNearDrinks();
+                                            double minLng = points.get(0).getX();
+                                            double maxLng = points.get(0).getX();
+                                            double minLat = points.get(0).getY();
+                                            double maxLat = points.get(0).getY();
+                                            for(int i=1;i<points.size();i++)
+                                            {
+                                                double templng = points.get(i).getX();
+                                                double templat = points.get(i).getY();
+
+                                                if(templng < minLng)
+                                                    minLng = templng;
+                                                else if(templng > maxLng)
+                                                    maxLng = templng;
+
+                                                if(templat < minLat)
+                                                    minLat = templat;
+                                                else if(templat > maxLat)
+                                                    maxLat = templat;
+                                            }
+                                            ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()));
                                             mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
                                         }
                                     });
@@ -514,7 +532,7 @@ public class RunningRunFragment extends Fragment {
                             }
                             catch (NumberFormatException ex)
                             {
-                                Toast.makeText(getContext(), "输入格式有误", Toast.LENGTH_LONG).show();
+                                ShowToast("输入格式有误", Toast.LENGTH_SHORT);
                                 InitFragment();
                                 return;
                             }
@@ -532,13 +550,14 @@ public class RunningRunFragment extends Fragment {
                 public void onClick(View view) {
                     if(userPosition == null)
                     {
-                        Toast.makeText(getContext(), "获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT).show();
+                        ShowToast("获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT);
                         return;
                     }
-                    Toast.makeText(getContext(), "双击确定经过站点，点击\"开始夜跑按钮\"产生夜跑路线", Toast.LENGTH_LONG).show();
+                    ShowToast("双击确定经过站点，点击\"开始夜跑按钮\"产生夜跑路线", Toast.LENGTH_LONG);
                     layoutOfRoutingButton.setVisibility(View.GONE);
                     layoutOfStartButton.setVisibility(View.VISIBLE);
                     layoutOfClearPoints.setVisibility(View.VISIBLE);
+                    layoutOfReturnInit.setVisibility(View.VISIBLE);
                     mFragmentStatus = fragmentStatus.RoutingByStops_Unstart;
                     stopPointsForShortestRoute.clear();
                     mMapView.setViewpointCenterAsync(userPosition);
@@ -571,10 +590,11 @@ public class RunningRunFragment extends Fragment {
                     {
                         if(stopPointsForShortestRoute.size() < 1)
                         {
-                            Toast.makeText(getActivity(), "请选择站点", Toast.LENGTH_LONG).show();
+                            ShowToast("请选择站点", Toast.LENGTH_SHORT);
                             return;
                         }
                         mFragmentStatus = fragmentStatus.RoutingByStops;
+                        layoutOfReturnInit.setVisibility(View.GONE);
                         btnStart.setText("获取路径...");
                         btnStart.setEnabled(false);
                         showLoctionAlways = false;
@@ -601,6 +621,19 @@ public class RunningRunFragment extends Fragment {
                     }
                     else if(mFragmentStatus == fragmentStatus.Pause)
                     {
+                        TextView textView = new TextView(getContext());
+                        {
+                            DecimalFormat df = new DecimalFormat("0.0");
+                            textView.setText("您本次跑步的距离为：" + df.format(userRuningDistance) + "m");
+                            textView.setTextSize(20);
+
+                        }
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setTitle("夜跑结束").setIcon(android.R.drawable.ic_dialog_map).setView(textView).setPositiveButton("确定", null);
+                        builder.show();
+                        endTimeMiliseconds = System.currentTimeMillis();
+                        UploadRunningInfo(5, planningRoute, userRuningDistance, startTimeMiliseconds, endTimeMiliseconds);
+
                         InitFragment();
                     }
                 }
@@ -619,6 +652,16 @@ public class RunningRunFragment extends Fragment {
                     layoutOfContinueButton.setVisibility(View.GONE);
                     mCurPointGraphic.setVisible(true);
                     showLoctionAlways = true;
+                }
+            });
+        }
+
+        btnReturnInit = (Button)view.findViewById(R.id.btn_return_Init);
+        {
+            btnReturnInit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    InitFragment();
                 }
             });
         }
@@ -671,7 +714,7 @@ public class RunningRunFragment extends Fragment {
                 }
                 catch (Exception ex)
                 {
-                    Toast.makeText(getContext(), "获取饮品店位置失败", Toast.LENGTH_SHORT).show();
+                    ShowToast("获取饮品店位置失败", Toast.LENGTH_SHORT);
                 }
             }
         };
@@ -712,7 +755,7 @@ public class RunningRunFragment extends Fragment {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getContext(), message, duration);
+                Toast.makeText(getContext(), message, duration).show();
             }
         });
     }
@@ -721,6 +764,11 @@ public class RunningRunFragment extends Fragment {
     {
         try
         {
+            if(allStopPointsList == null || allStopPointsList.size() == 0)
+            {
+                ShowToast("无适合您当前位置的路径规划", Toast.LENGTH_LONG);
+                return null;
+            }
             Point point = (Point)GeometryEngine.project(pointGps, mMapView.getSpatialReference());
             Point leftTop = new Point(point.getX() - lengthOfRouth, point.getY() - lengthOfRouth, point.getSpatialReference());
             Point rightButtom = new Point(point.getX() + lengthOfRouth, point.getY() + lengthOfRouth, point.getSpatialReference());
@@ -748,7 +796,7 @@ public class RunningRunFragment extends Fragment {
 
             if(pointForRoutePlanning.size() == 0)
             {
-                Toast.makeText(getActivity(), "无适合您当前位置的路径规划", Toast.LENGTH_LONG).show();
+                ShowToast("无适合您当前位置的路径规划", Toast.LENGTH_LONG);
                 return null;
             }
 
@@ -759,7 +807,7 @@ public class RunningRunFragment extends Fragment {
                 {
                     if((distanceOfAllRoutes[index++] = RouteApi.GetDistanceOfShortestRoute(point, tempPoint)) == -1)
                     {
-                        Toast.makeText(getActivity(), "网络错误，路径规划失败", Toast.LENGTH_LONG).show();
+                        ShowToast("网络错误，路径规划失败", Toast.LENGTH_LONG);
                         return null;
                     }
                 }
@@ -779,7 +827,6 @@ public class RunningRunFragment extends Fragment {
             }
             DoubleReferance df = new DoubleReferance(0);
             ArrayList<Point> pointsArrayList = RouteApi.GetShortestRoute(point, pointForRoutePlanning.get(indexOfNeareatRoute), df);
-            userRuningDistance = df.getValue();
             ArrayList<Point> resultPoints = new ArrayList<Point>();
             resultPoints.add(pointGps);
             for(Point tempPoint : pointsArrayList)
@@ -796,15 +843,19 @@ public class RunningRunFragment extends Fragment {
         }
     }
 
-    public void GenerateEndPoinrsFromMySql()
+    public void GenerateEndPoinrsFromMySql(Point leftTop, Point rightBottom)
     {
+        final double minLng = leftTop.getX();
+        final double maxLng = rightBottom.getX();
+        final double minLat = rightBottom.getY();
+        final double maxLat = leftTop.getY();
         new Thread(new Runnable() {
         @Override
         public void run() {
             try
             {
 //                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_neardrinks) + "?minLng=-180&maxLng=180&minLat=-90&maxLat=90");
-                URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.add_running_info) + "?minLng=-180&maxLng=180&minLat=-90&maxLat=90");
+                URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_routestops) + "?minLng=" + minLng +  "&maxLng=" + maxLng + "&minLat=" + minLat + "&maxLat=" + maxLat);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(10000);
@@ -812,7 +863,7 @@ public class RunningRunFragment extends Fragment {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 String content = reader.readLine();
                 Bundle bundle = new Bundle();
-                bundle.putString("RouteStops", content);
+                bundle.putString("PointsJsonString", content);
                 Message message = new Message();
                 message.setData(bundle);
                 mGenerateStopPointsHandler.sendMessage(message);
@@ -869,7 +920,7 @@ public class RunningRunFragment extends Fragment {
                 ArrayList<Point> points = RouteApi.GetShortestRoute(stops, dr);
                 if(points == null)
                 {
-                    Toast.makeText(getActivity(), "获取路径失败，请检查网络状态或定位服务", Toast.LENGTH_LONG).show();
+                    ShowToast("获取路径失败，请检查网络状态或定位服务", Toast.LENGTH_LONG);
                     InitFragment();
                     return;
                 }
@@ -882,11 +933,28 @@ public class RunningRunFragment extends Fragment {
                 }
                 resultPooints.add(userPosition);
                 planningRoute = resultPooints;
-                userRuningDistance = dr.getValue();
 
                 DrawRoute(resultPooints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3));
-                ShowNearDrinks();
-                UploadRunningInfo(1, resultPooints, dr.getValue());
+                double minLng = resultPooints.get(0).getX();
+                double maxLng = resultPooints.get(0).getX();
+                double minLat = resultPooints.get(0).getY();
+                double maxLat = resultPooints.get(0).getY();
+                for(int i=1;i<resultPooints.size();i++)
+                {
+                    double templng = resultPooints.get(i).getX();
+                    double templat = resultPooints.get(i).getY();
+
+                    if(templng < minLng)
+                        minLng = templng;
+                    else if(templng > maxLng)
+                        maxLng = templng;
+
+                    if(templat < minLat)
+                        minLat = templat;
+                    else if(templat > maxLat)
+                        maxLat = templat;
+                }
+                ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()));
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -894,6 +962,7 @@ public class RunningRunFragment extends Fragment {
                         mCurPointGraphic.setGeometry(userPosition);
                         mFragmentStatus = fragmentStatus.RoutingByStops;
                         btnStart.setText("暂停");
+                        startTimeMiliseconds = System.currentTimeMillis();
                         mCurPointGraphic.setVisible(true);
                         showLoctionAlways = true;
                         btnStart.setEnabled(true);
@@ -946,7 +1015,10 @@ public class RunningRunFragment extends Fragment {
                 layoutOfRoutingButton.setVisibility(View.VISIBLE);
                 layoutOfStartButton.setVisibility(View.GONE);
                 layoutOfContinueButton.setVisibility(View.GONE);
+                layoutOfClearPoints.setVisibility(View.GONE);
+                layoutOfReturnInit.setVisibility(View.GONE);
                 planningDistance = 0;
+                userRuningDistance = 0;
                 haveGotRoute = false;
                 mCurPointGraphic.setVisible(false);
                 btnStart.setText("开始夜跑");
@@ -957,12 +1029,28 @@ public class RunningRunFragment extends Fragment {
                 mDrinkOverlay.getGraphics().clear();
                 drinkList.clear();
                 planningRoute.clear();
+                startTimeMiliseconds = 0;
+                endTimeMiliseconds = 0;
             }
         });
     }
 
-    private void ShowNearDrinks()
+    private void ShowNearDrinks(Point leftTop, Point rightBottom)
     {
+        Point leftTopMkt = (Point)GeometryEngine.project(leftTop, SpatialReferences.getWebMercator());
+        Point rightBottomMkt = (Point)GeometryEngine.project(rightBottom, SpatialReferences.getWebMercator());
+        final double minLngMkt = leftTopMkt.getX() - 200;
+        final double maxLngMkt = rightBottomMkt.getX() + 200;
+        final double minLatMkt = rightBottomMkt.getY() - 200;
+        final double maxLatMkt = leftTopMkt.getY() + 200;
+
+        Point leftTopOpt = (Point)GeometryEngine.project(new Point(minLngMkt, maxLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
+        Point rightBottomMktOpt = (Point)GeometryEngine.project(new Point(maxLngMkt, minLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
+
+        final double minLng = leftTopOpt.getX();
+        final double maxLng = rightBottomMktOpt.getX();
+        final double minLat = rightBottomMktOpt.getY();
+        final double maxLat = leftTopOpt.getY();
         Thread showNearDrinkThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -970,7 +1058,7 @@ public class RunningRunFragment extends Fragment {
                 {
 //                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_neardrinks) + "?minLng=-180&maxLng=180&minLat=-90&maxLat=90");
 //                                                        http://localhost:4521/api/neardrinks?minLng=-180&maxLng=180&minLat=-90&maxLat=30.52888
-                    URL url = new URL("http://192.168.0.100:4521/" + getString(R.string.webapi_root) + getString(R.string.webapi_neardrinks) + "?minLng=-180&maxLng=180&minLat=-90&maxLat=90");
+                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_neardrinks) + "?minLng=" + minLng +  "&maxLng=" + maxLng + "&minLat=" + minLat + "&maxLat=" + maxLat);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
                     connection.setConnectTimeout(10000);
@@ -985,19 +1073,14 @@ public class RunningRunFragment extends Fragment {
                 }
                 catch (Exception e)
                 {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getContext(), "获取饮品店位置失败", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    ShowToast("获取饮品店位置失败", Toast.LENGTH_SHORT);
                 }
             }
         });
         showNearDrinkThread.start();
     }
 
-    private JSONObject GenerateRouteJson(int userId, ArrayList<Point> pointsList, double distanceOfRoute)
+    private JSONObject GenerateRouteJson(int userId, ArrayList<Point> pointsList, double distanceOfRoute, long during)
     {
         try
         {
@@ -1015,6 +1098,7 @@ public class RunningRunFragment extends Fragment {
             routeSubInfo.put("UserId", userId);
             routeSubInfo.put("DateTime", new Timestamp(System.currentTimeMillis()));
             routeSubInfo.put("Distance", distanceOfRoute);
+            routeSubInfo.put("During", during);
             routeSubInfo.put("Path", pathArray);
             routeInfo.put("RouteInfo", routeSubInfo);
 
@@ -1027,16 +1111,18 @@ public class RunningRunFragment extends Fragment {
         }
     }
 
-    private boolean UploadRunningInfo(final int userId, ArrayList<Point> pointsList, double distanceOfRoute)
+    private boolean UploadRunningInfo(int id, ArrayList<Point> pointsList, double distanceOfRoute, long start, long end)
     {
-        final JSONObject routeInfo = GenerateRouteJson(userId, pointsList, distanceOfRoute);
+        final int userId = id;
+        final long during = end - start;
+        final JSONObject routeInfo = GenerateRouteJson(userId, pointsList, distanceOfRoute, during);
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try
                 {
-                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.add_running_info));
+                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_add_running_info));
 //                                                        http://localhost:4521/api/neardrinks?minLng=-180&maxLng=180&minLat=-90&maxLat=30.52888
 //                    URL url = new URL("http://192.168.0.100:4521/api/addrunninginfo/");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -1053,17 +1139,18 @@ public class RunningRunFragment extends Fragment {
                     outputDataStream.flush();
                     outputDataStream.close();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = reader.readLine();
-                    String s = content;
+                    String response = reader.readLine();
+                    JSONTokener jsonParser = new JSONTokener(response);
+                    JSONObject json = (JSONObject) jsonParser.nextValue();
+                    String status = json.getString("status");
+                    if(status == "true")
+                        ShowToast("本次跑步记录上次成功", Toast.LENGTH_SHORT);
+                    else
+                        ShowToast("记录上传失败，请检查网络", Toast.LENGTH_SHORT);
                 }
                 catch (Exception e)
                 {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getContext(), "数据上传失败", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    ShowToast("数据上传失败", Toast.LENGTH_SHORT);
                 }
             }
         }).start();
