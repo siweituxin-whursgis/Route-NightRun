@@ -24,7 +24,6 @@ import java.util.ArrayList;
  */
 
 public class RouteApi {
-
     @Nullable
     public static ArrayList<Point> GetShortestRoute(Point start, Point end, @Nullable RunningRunFragment.DoubleReferance distance)
     {
