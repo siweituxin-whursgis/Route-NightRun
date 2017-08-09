@@ -24,7 +24,6 @@ import java.util.ArrayList;
  */
 
 public class RouteApi {
-
     @Nullable
     public static ArrayList<Point> GetShortestRoute(Point start, Point end, @Nullable RunningRunFragment.DoubleReferance distance)
     {
@@ -178,5 +177,12 @@ public class RouteApi {
         {
             return distance;
         }
+    }
+
+    public static double GetDistanceOfTwoPoint(Point p1, Point p2)
+    {
+        Point p1Mkt = (Point)GeometryEngine.project(p1, SpatialReference.create(3857));
+        Point p2Mkt = (Point)GeometryEngine.project(p2, SpatialReference.create(3857));
+        return Math.sqrt((p1Mkt.getX() - p2Mkt.getX())*(p1Mkt.getX() - p2Mkt.getX()) + (p1Mkt.getY() - p2Mkt.getY())*(p1Mkt.getY() - p2Mkt.getY()));
     }
 }
