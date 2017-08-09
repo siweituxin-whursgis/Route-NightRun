@@ -7,18 +7,18 @@
     tools:context="com.example.huyigong.route_nightrun.Calculate_KM">
 
     <FrameLayout
-        android:layout_width="350dp"
-        android:layout_height="500dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp"
         tools:layout_editor_absoluteX="5dp"
         tools:layout_editor_absoluteY="5dp">
 
         <Button
-            android:id="@+id/textView"
-            android:layout_width="350dp"
-            android:layout_height="50dp"
+            style="@android:style/Widget.Material.Button.Borderless"
+            android:id="@+id/set_week_target"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@android:color/transparent"
-
             android:drawableRight="@drawable/setting_b"
             android:gravity="left|center"
             android:text="周目标设置："

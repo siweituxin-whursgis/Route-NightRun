@@ -8,90 +8,6 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_marginTop="430dp"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-
-          
-
-        <RadioButton
-            android:id="@+id/running_estimate"
-
-            android:layout_width="15dp"
-            android:layout_height="60dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
-            android:button="@android:color/transparent"
-            android:checked="true"
-            android:drawablePadding="2dp"
-            android:drawableTop="@drawable/test"
-            android:padding="5dp"
-            android:text="评价"
-            android:textAlignment="center"
-            android:textColor="@android:color/darker_gray" />
-
-
-          
-
-        <RadioButton
-            android:id="@+id/running"
-            android:layout_width="15dp"
-            android:layout_height="60dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
-            android:button="@android:color/transparent"
-            android:drawableTop="@drawable/running"
-            android:gravity="center_horizontal|bottom"
-            android:padding="5dp"
-            android:text="夜跑"
-            android:textColor="@android:color/darker_gray" />
-
-          
-
-        <RadioButton
-            android:id="@+id/runningAppointment"
-            android:layout_width="15dp"
-            android:layout_height="60dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
-            android:button="@android:color/transparent"
-            android:drawableTop="@drawable/talk"
-            android:gravity="center_horizontal|bottom"
-            android:padding="5dp"
-            android:text="约跑"
-            android:textColor="@android:color/darker_gray" />
-
-          
-
-        <RadioButton
-            android:id="@+id/running_safety"
-            android:layout_width="15dp"
-            android:layout_height="60dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="1"
-            android:button="@android:color/transparent"
-            android:drawableTop="@drawable/safe"
-            android:gravity="center_horizontal|bottom"
-            android:padding="5dp"
-            android:text="报警"
-            android:textColor="@android:color/darker_gray" />
-
-    </LinearLayout>
-
     <ImageView
         android:id="@+id/imageView2"
         android:layout_width="80dp"
@@ -163,7 +79,7 @@
         android:drawableRight="@drawable/gotoright"
         android:elevation="0dp"
         android:gravity="center_horizontal|center"
-        android:text="累计路程：0.0KM"
+        android:text="累计路程：2.1KM"
         android:textColor="@android:color/background_light"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -181,7 +97,7 @@
         android:drawableRight="@drawable/gotoright"
         android:elevation="0dp"
         android:gravity="center_horizontal|center"
-        android:text="消耗卡路里："
+        android:text="消耗卡路里：55大卡"
         android:textColor="@android:color/background_light"
         android:textSize="18sp"
         android:textStyle="bold"
