@@ -48,7 +48,7 @@
                 android:layout_weight="1.00"
                 android:drawableLeft="@drawable/v"
                 android:gravity="center|left"
-                android:text="配速: " />
+                android:text="配速： " />
 
             <TextView
                 android:id="@+id/textView14"
@@ -58,7 +58,7 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/c"
                 android:gravity="center|left"
-                android:text="时长:  " />
+                android:text="时长：  " />
 
             <TextView
                 android:id="@+id/textView15"
@@ -67,7 +67,7 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/k"
                 android:gravity="center|left"
-                android:text="卡路里:" />
+                android:text="卡路里：" />
         </LinearLayout>
 
         <LinearLayout
@@ -108,7 +108,7 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/elevation"
                 android:gravity="center|left"
-                android:text="平均海拔:  "
+                android:text="平均海拔：  "
                 />
 
             <TextView
@@ -118,7 +118,7 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/time_a"
                 android:gravity="center|left"
-                android:text="平均时长:  " />
+                android:text="平均时长：  " />
         </LinearLayout>
 
         <LinearLayout

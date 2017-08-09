@@ -1,22 +1,37 @@
 package com.example.huyigong.route_nightrun;
 
+import android.app.AlertDialog;
+import android.app.LocalActivityManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTabHost;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class NightRunActivity extends AppCompatActivity {
 
     TabHost tabHost;
 
+    Context runContext = null;
+
+    FragmentManager fragmentManager = null;
+
+    boolean haveGotParam = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_night_run);
-
+        fragmentManager = getSupportFragmentManager();
         // 添加TabHost标签
         tabHost = (TabHost) findViewById(R.id.night_run_tabhost);
         tabHost.setup();
@@ -26,11 +41,23 @@ public class NightRunActivity extends AppCompatActivity {
         View view_talk = createTabView("约跑", R.drawable.tab_item_talk_icon); // 约跑
         View view_safe = createTabView("报警", R.drawable.tab_item_safe_icon); // 报警
 
+
+
         tabHost.addTab(tabHost.newTabSpec("estimate").setIndicator(view_estimate).setContent(R.id.fragment_running_estimate));
         tabHost.addTab(tabHost.newTabSpec("run").setIndicator(view_run).setContent(R.id.fragment_running));
         tabHost.addTab(tabHost.newTabSpec("talk").setIndicator(view_talk).setContent(R.id.fragment_talk));
         tabHost.addTab(tabHost.newTabSpec("safe").setIndicator(view_safe).setContent(R.id.fragment_safe));
         tabHost.getTabWidget().setStripEnabled(false);
+
+        runContext = view_run.getContext();
+        tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                if(s == "run" && !haveGotParam && false)
+                {
+                }
+            }
+        });
     }
 
     @Override
