@@ -35,10 +35,11 @@
 
             <TableRow>
                 <FrameLayout android:layout_gravity="center">
+
                     <Button
                         android:id="@+id/gym"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="40dp"
                         android:background="@drawable/button_db"
                         android:text="健身房"
                         android:textAllCaps="false"
@@ -47,12 +48,13 @@
                 </FrameLayout>
 
                 <FrameLayout android:layout_gravity="center">
+
                     <Button
                         android:id="@+id/info"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="40dp"
                         android:background="@drawable/button_db"
-                        android:text="周边健身房详情"
+                        android:text="周边健身房排名"
                         android:textColor="@android:color/background_light"
                         android:textStyle="bold" />
                 </FrameLayout>
