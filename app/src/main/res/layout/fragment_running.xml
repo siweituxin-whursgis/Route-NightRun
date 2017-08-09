@@ -15,21 +15,22 @@
         android:id="@+id/layout_routing"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_marginTop="440dp"
+        android:layout_marginTop="400dp"
         android:orientation="horizontal"
         android:visibility="visible">
 
         <Button
-        android:id="@+id/btn_specify_route_length"
-        style="@android:style/Widget.Material.Button.Colored"
-        android:layout_width="80dp"
-        android:layout_height="40dp"
-        android:layout_weight="1"
-        android:background="@drawable/button_db"
-        android:gravity="center"
-        android:text="指定路线长度"
-        android:textSize="19sp"
-        android:textStyle="bold" />
+            android:id="@+id/btn_specify_route_length"
+            style="@android:style/Widget.Material.Button.Colored"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_db"
+            android:gravity="center"
+            android:text="指定路线长度"
+            android:textSize="19sp"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btn_specify_route_stops"
