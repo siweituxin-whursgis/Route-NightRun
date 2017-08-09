@@ -6,7 +6,7 @@
     tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
     <com.esri.arcgisruntime.mapping.view.MapView
-        android:id="@+id/mapView"
+        android:id="@+id/mapView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:visibility="visible"/>
@@ -15,28 +15,31 @@
         android:id="@+id/layout_routing"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_marginTop="400dp"
+        android:layout_marginTop="440dp"
         android:orientation="horizontal"
         android:visibility="visible">
 
         <Button
-            android:id="@+id/btn_specify_route_length"
-            style="@android:style/Widget.Material.Button.Colored"
-            android:layout_width="80dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="0dp"
-            android:layout_weight="1"
-            android:background="@drawable/button_db"
-            android:gravity="center"
-            android:text="指定路线长度"
-            android:textSize="19sp"
-            android:textStyle="bold" />
+        android:id="@+id/btn_specify_route_length"
+        style="@android:style/Widget.Material.Button.Colored"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_weight="1"
+        android:background="@drawable/button_db"
+        android:gravity="center"
+        android:text="指定路线长度"
+        android:textSize="19sp"
+        android:textStyle="bold" />
 
         <Button
             android:id="@+id/btn_specify_route_stops"
             style="@android:style/Widget.Material.Button.Colored"
             android:layout_width="80dp"
             android:layout_height="40dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="10dp"
             android:layout_weight="1"
             android:background="@drawable/button_db"
             android:gravity="center"
@@ -136,6 +139,26 @@
     </GridLayout>
 
     <GridLayout
+        android:id="@+id/layout_return_Init"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="320dp"
+        android:layout_weight="1"
+        android:columnCount="1"
+        android:rowCount="1"
+        android:visibility="visible">
+
+        <Button
+            android:id="@+id/btn_return_Init"
+            style="@android:style/Widget.Material.Button.Colored"
+            android:layout_gravity="center"
+            android:background="@drawable/button_db"
+            android:text="返回"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+    </GridLayout>
+
+    <GridLayout
         android:id="@+id/layout_clear_points"
         android:layout_width="match_parent"
         android:layout_height="40dp"
@@ -143,7 +166,7 @@
         android:layout_weight="1"
         android:columnCount="1"
         android:rowCount="1"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/btn_clear_points"
@@ -162,7 +185,7 @@
         android:layout_marginTop="440dp"
         android:columnCount="1"
         android:rowCount="1"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/btn_start_run"
