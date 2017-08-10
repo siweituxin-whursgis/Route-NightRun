@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -146,12 +147,16 @@ public class Calculate_KM extends AppCompatActivity {
         ((Button) findViewById(R.id.set_week_target)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final EditText inputServer = new EditText(getApplicationContext());
+                inputServer.setHint("周目标");
+                inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
                 new AlertDialog.Builder(Calculate_KM.this)
                         .setTitle("设置周目标")
                         .setMessage("输入目标公里数")
                         .setPositiveButton("确定", null)
                         .setNegativeButton("取消", null)
-                        .setView(new EditText(getApplicationContext()))
+                      //  .setView(new EditText(getApplicationContext()))
+                        .setView(inputServer)
                         .show();
             }
         });

@@ -8,10 +8,13 @@ import android.app.Fragment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -186,9 +189,40 @@ public class RunningEstimateFragment extends Fragment {
                     double speed = runningDistance / secondDuring;//(m/s)
                     double minuteDuring = secondDuring / 60;//(min)
                     double calorie = userWeight * runningDistance * 1036 / 1000000;//跑步热量（kcal）＝体重（kg）×距离（公里）×1.036
-                    ((Button) view.findViewById(R.id.button_allmeter)).setText("累计路程：" + runningDistance + "km");
-                    ((Button) view.findViewById(R.id.button_cal)).setText("消耗卡路里：" + calorie + "cal");
-
+                   // ((Button) view.findViewById(R.id.button_allmeter)).setText("累计路程：" + 2.1 + "km");
+                   // ((Button) view.findViewById(R.id.button_cal)).setText("消耗卡路里：" + 230 + "cal");
+                    ((Button) view.findViewById(R.id.button_allmeter)).setOnClickListener(new View.OnClickListener() {
+                        public void onClick(View v) {
+                            final EditText inputServer = new EditText(getContext());
+                          //  inputServer.setHint("周目标");
+                            inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            Context temp = getActivity();
+                            new AlertDialog.Builder(temp)
+                                    .setTitle("总公里数")
+                                    .setMessage("2.1KM")
+                                    .setPositiveButton("确定", null)
+                                    .setNegativeButton("取消", null)
+                                    //  .setView(new EditText(getApplicationContext()))
+                                   // .setView(inputServer)
+                                    .show();
+                        }
+                    });
+                    ((Button) view.findViewById(R.id.button_cal)).setOnClickListener(new View.OnClickListener() {
+                        public void onClick(View v) {
+                            final EditText inputServer = new EditText(getContext());
+                            //  inputServer.setHint("周目标");
+                            inputServer.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            Context temp = getActivity();
+                            new AlertDialog.Builder(temp)
+                                    .setTitle("消耗卡路里")
+                                    .setMessage("230大卡")
+                                    .setPositiveButton("确定", null)
+                                    .setNegativeButton("取消", null)
+                                    //  .setView(new EditText(getApplicationContext()))
+                                    // .setView(inputServer)
+                                    .show();
+                        }
+                    });
                 }
                 catch (Exception ex)
                 {
