@@ -1,45 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.huyigong.route_nightrun.Indoor_run">
-
-    <FrameLayout
-        android:layout_width="350dp"
-        android:layout_height="520dp"
-        android:background="@android:color/transparent"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp">
+    tools:context="com.example.huyigong.route_nightrun.IndoorRunActivity">
 
         <com.esri.arcgisruntime.mapping.view.MapView
             android:id="@+id/mapView"
-            android:layout_width="350dp"
-            android:layout_height="520dp"
-            android:visibility="visible"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="0dp"></com.esri.arcgisruntime.mapping.view.MapView>
-
-        <Button
-            android:id="@+id/gym"
-            android:layout_width="120dp"
-            android:layout_height="40dp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginTop="430dp"
-            android:background="@drawable/button_db"
-            android:gravity="center"
-            android:text="健身房"
-            android:textAllCaps="false"
-            android:textColor="@android:color/background_light"
-            android:textStyle="bold" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
         <EditText
             android:id="@+id/editText4"
-            android:layout_width="250dp"
-            android:layout_height="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="50dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginTop="10dp"
+            android:padding="10dp"
             android:background="@drawable/search"
             android:drawableLeft="@drawable/fangdajing"
             android:ems="10"
@@ -47,18 +26,41 @@
             tools:layout_editor_absoluteX="43dp"
             tools:layout_editor_absoluteY="16dp" />
 
-        <Button
-            android:id="@+id/info"
-            android:layout_width="120dp"
-            android:layout_height="40dp"
-            android:layout_marginLeft="200dp"
-            android:layout_marginTop="430dp"
-            android:background="@drawable/button_db"
-            android:gravity="center"
-            android:text="周边健身房详情"
-            android:textColor="@android:color/background_light"
-            android:textStyle="bold" />
+        <TableLayout
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="0,1">
 
-    </FrameLayout>
+            <TableRow>
+                <FrameLayout android:layout_gravity="center">
 
-</android.support.constraint.ConstraintLayout>
+                    <Button
+                        android:id="@+id/gym"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_db"
+                        android:text="健身房"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/background_light"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <FrameLayout android:layout_gravity="center">
+
+                    <Button
+                        android:id="@+id/info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_db"
+                        android:text="周边健身房排名"
+                        android:textColor="@android:color/background_light"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+            </TableRow>
+
+        </TableLayout>
+
+</FrameLayout>
