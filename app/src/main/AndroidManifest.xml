@@ -23,10 +23,6 @@
         <activity
             android:name=".WeatherActivity"
             android:label="夜跑小助手">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".Night_Running"
@@ -58,7 +54,12 @@
 
         <activity
             android:name=".LoginActivity"
-            android:label="夜跑小助手"/>
+            android:label="夜跑小助手">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".GymInfoActivity" />
         <activity android:name=".Call_Taxi" />
         <activity android:name=".taxi_coming" />

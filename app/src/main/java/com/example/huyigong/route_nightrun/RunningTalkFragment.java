@@ -312,7 +312,7 @@ public class RunningTalkFragment extends Fragment {
                                 String gender = ((int) feature.getAttributes().get("UserGender")) == 1 ? "男生" : "女生";
                                 ((TextView) calloutView.findViewById(R.id.near_people_sex)).setText(gender);
                                 Date date = new Date(((int) feature.getAttributes().get("UserAverageRunTime")) * 1000);
-                                SimpleDateFormat format = new SimpleDateFormat("HH时mm分ss秒");
+                                SimpleDateFormat format = new SimpleDateFormat("mm分ss秒");
                                 ((TextView) calloutView.findViewById(R.id.near_people_runtime)).setText(format.format(date));
                                 ((Button) calloutView.findViewById(R.id.near_people_call_it)).setOnClickListener(new View.OnClickListener() {
                                     @Override
