@@ -173,9 +173,13 @@ public class IndoorRunActivity extends AppCompatActivity {
             if (mCurLocation == null) {
                 mCurLocation = getLocation();
             }
-            new Thread(new RouteRunnable(
-                    new Point(mCurLocation.getLongitude(), mCurLocation.getLatitude(), SpatialReferences.getWgs84()),
-                    new Point(gym.getGymLng(), gym.getGymLat(), SpatialReferences.getWgs84()))).start();
+            if (mCurLocation != null) {
+                new Thread(new RouteRunnable(
+                        new Point(mCurLocation.getLongitude(), mCurLocation.getLatitude(), SpatialReferences.getWgs84()),
+                        new Point(gym.getGymLng(), gym.getGymLat(), SpatialReferences.getWgs84()))).start();
+            } else {
+                Toast.makeText(getApplicationContext(), "无法获取当前位置", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -240,10 +244,14 @@ public class IndoorRunActivity extends AppCompatActivity {
                             if (mCurLocation == null) {
                                 mCurLocation = getLocation();
                             }
-                            Point cur = new Point(mCurLocation.getLongitude(), mCurLocation.getLatitude(), SpatialReferences.getWgs84());
-                            Point gym = new Point((double) feature.getAttributes().get("GymLng"), (double) feature.getAttributes().get("GymLat"), SpatialReferences.getWgs84());
-                            new Thread(new RouteRunnable(cur, gym)).start();
-                            callout.dismiss();
+                            if (mCurLocation != null) {
+                                Point cur = new Point(mCurLocation.getLongitude(), mCurLocation.getLatitude(), SpatialReferences.getWgs84());
+                                Point gym = new Point((double) feature.getAttributes().get("GymLng"), (double) feature.getAttributes().get("GymLat"), SpatialReferences.getWgs84());
+                                new Thread(new RouteRunnable(cur, gym)).start();
+                                callout.dismiss();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "无法获取当前位置", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     });
                     callout.setContent(calloutView);

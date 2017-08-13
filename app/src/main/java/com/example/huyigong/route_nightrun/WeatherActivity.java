@@ -33,7 +33,7 @@ public class WeatherActivity extends AppCompatActivity {
                 }
                 try {
                     city.append(bundle.getString("city"));
-                    temp.setText(bundle.getInt("temp")+"°C");
+                    temp.setText("30"+"°C");
                     wet.append(bundle.getString("SD"));
                     int ifrain = bundle.getInt("rain");
                     TextView accom = (TextView)findViewById(R.id.accom);
