@@ -5,11 +5,18 @@
     android:layout_height="match_parent"
     tools:context="com.example.huyigong.route_nightrun.RunningEstimateFragment">
 
-    <com.esri.arcgisruntime.mapping.view.MapView
-        android:id="@+id/mapView1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:visibility="visible"/>
+    <FrameLayout
+        android:id="@+id/layout_night_running"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <com.esri.arcgisruntime.mapping.view.MapView
+            android:id="@+id/mapView1"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:visibility="visible"/>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/layout_routing"
