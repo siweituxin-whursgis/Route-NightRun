@@ -9,7 +9,7 @@
         android:id="@+id/mapView1"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:visibility="visible"/>
+        android:visibility="visible" />
 
     <LinearLayout
         android:id="@+id/layout_routing"
@@ -196,5 +196,31 @@
             android:textSize="19sp"
             android:textStyle="bold" />
     </GridLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_view"
+            android:layout_width="180dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/button_db"
+            android:text="显示风景夜跑路线"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+        <RadioButton
+            android:id="@+id/showLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="100dp"
+            android:layout_marginTop="20dp"
+            android:text="路灯"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </FrameLayout>

@@ -3,11 +3,11 @@
     <color name="colorPrimaryLight">#7986cb</color>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#000000</color>
-
+    <color name="white">#ffffff</color>
     <color name="colorAccent">#00BFFF</color>
     <color name="colorAccentLight">#81C784</color>
     <color name="colorAccentDark">#f334f1</color>
     <color name="Darkblue">#191970</color>
-    <color name="black_overlay">#66000000</color>
+    <color name="black_overlay">#661d1b1b</color>
     <color name="background_costum">#00BFFF</color>
 </resources>

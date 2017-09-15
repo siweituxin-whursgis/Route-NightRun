@@ -79,7 +79,7 @@
         android:drawableRight="@drawable/gotoright"
         android:elevation="0dp"
         android:gravity="center_horizontal|center"
-        android:text="累计路程：2.1KM"
+        android:text="累计路程"
         android:textColor="@android:color/background_light"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -97,7 +97,7 @@
         android:drawableRight="@drawable/gotoright"
         android:elevation="0dp"
         android:gravity="center_horizontal|center"
-        android:text="消耗卡路里：55大卡"
+        android:text="消耗卡路里"
         android:textColor="@android:color/background_light"
         android:textSize="18sp"
         android:textStyle="bold"

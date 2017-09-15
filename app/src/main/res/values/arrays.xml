@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+     <string-array name="location">
+    <item>信息学部</item>
+    <item>文理学部</item>
+    <item>工学部</item>
+    <item>医学部</item>
+</string-array>
+</resources>
