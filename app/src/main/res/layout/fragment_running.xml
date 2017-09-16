@@ -204,8 +204,8 @@
 
         <Button
             android:id="@+id/btn_view"
-            android:layout_width="180dp"
-            android:layout_height="30dp"
+            android:layout_width="160dp"
+            android:layout_height="35dp"
             android:layout_marginTop="20dp"
             android:background="@drawable/button_db"
             android:text="显示风景夜跑路线"

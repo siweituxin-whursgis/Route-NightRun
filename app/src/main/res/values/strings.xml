@@ -55,4 +55,5 @@
     <string name="title_activity_register">Register</string>
     <string name="title_activity_register_new">Register_new</string>
     <string name="title_activity_out_men_register">OutMenRegister</string>
+    <string name="title_activity_before__login">Before_Login</string>
 </resources>
