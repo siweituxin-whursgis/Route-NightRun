@@ -171,6 +171,7 @@ public class RunningRunFragment extends Fragment {
     ArrayList<Point> planningRoute = new ArrayList<Point>();
     Handler mShowNearDrinksHanler;
     Handler mGenerateStopPointsHandler;
+    Handler mShowRoadLampHandler;
 
     LinearLayout layoutOfRoutingButton = null;
     GridLayout layoutOfStartButton = null;
@@ -197,6 +198,7 @@ public class RunningRunFragment extends Fragment {
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
+    ArrayList<Point> roadlampList = new ArrayList<Point>();
     Point userPosition = null;
 
     long startTimeMiliseconds = 0;
@@ -735,9 +737,58 @@ public class RunningRunFragment extends Fragment {
                 {
                     ex.printStackTrace();
                 }
-
             }
         };
+
+        mShowRoadLampHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg)
+            {
+                try
+                {
+                    String response = ((Bundle)msg.getData()).getString("RoadLampsString");
+                    JSONTokener jsonParser = new JSONTokener(response);
+                    JSONObject json = (JSONObject) jsonParser.nextValue();
+                    JSONArray pointsArray = json.getJSONArray("RoadLamps");
+                    for(int i=0;i<pointsArray.length();i++)
+                    {
+                        JSONObject tempRoadLamp = (JSONObject) pointsArray.get(i);
+                        final double pointLng = tempRoadLamp.getDouble("Lng");
+                        final double pointLat = tempRoadLamp.getDouble("Lat");
+                        int status = tempRoadLamp.getInt("IsBroken");
+                        final boolean isBroken = (status == 0 ? false : true);
+                        final Point tempPoint = new Point(pointLng, pointLat, SpatialReferences.getWgs84());
+
+                        BitmapDrawable pinBitmap = null;
+                        if(isBroken)
+                            pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.roadlamp_broken);
+                        else
+                            pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.roadlamp);
+                        final PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol(pinBitmap);
+                        pictureMarkerSymbol.setHeight(30);
+                        pictureMarkerSymbol.setWidth(30);
+                        pictureMarkerSymbol.setOffsetX(0);
+                        pictureMarkerSymbol.setOffsetY(15);
+                        pictureMarkerSymbol.loadAsync();
+                        pictureMarkerSymbol.addDoneLoadingListener(new Runnable() {
+                            @Override
+                            public void run() {
+                                roadlampList.add(tempPoint);
+                                Graphic g = new Graphic(tempPoint, pictureMarkerSymbol);
+                                mDrinkOverlay.getGraphics().add(g);
+                            }
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        //显示路灯
+        ShowRoadLamps(new Point(-180, 90), new Point(180, -90));
 
         return view;
     }
@@ -1071,6 +1122,39 @@ public class RunningRunFragment extends Fragment {
                 catch (Exception e)
                 {
                     ShowToast("获取饮品店位置失败", Toast.LENGTH_SHORT);
+                }
+            }
+        });
+        showNearDrinkThread.start();
+    }
+
+    public void ShowRoadLamps(Point leftTop, Point rightBottom)
+    {
+        final double minLng = leftTop.getX();
+        final double maxLng = rightBottom.getX();
+        final double minLat = rightBottom.getY();
+        final double maxLat = leftTop.getY();
+        Thread showNearDrinkThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.roadlamps) + "?minLng=" + minLng +  "&maxLng=" + maxLng + "&minLat=" + minLat + "&maxLat=" + maxLat);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(10000);
+                    connection.setReadTimeout(4000);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String content = reader.readLine();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("RoadLampsString", content);
+                    Message message = new Message();
+                    message.setData(bundle);
+                    mShowRoadLampHandler.sendMessage(message);
+                }
+                catch (Exception e)
+                {
+                    ShowToast("获取路灯信息失败", Toast.LENGTH_SHORT);
                 }
             }
         });
