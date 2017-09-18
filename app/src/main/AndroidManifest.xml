@@ -58,9 +58,7 @@
 
         <activity
             android:name=".LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".GymInfoActivity" />
         <activity android:name=".Call_Taxi" />
         <activity android:name=".taxi_coming" />
@@ -81,11 +79,15 @@
         <activity
             android:name=".Before_Login"
             android:label="夜跑小助手"
-            android:theme="@style/AppTheme.NoActionBar"> <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter></activity>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".forum"
+            android:label="跑友秀"></activity>
     </application>
 
 </manifest>

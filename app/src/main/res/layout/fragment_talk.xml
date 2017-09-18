@@ -12,4 +12,12 @@
         android:layout_height="match_parent">
     </com.esri.arcgisruntime.mapping.view.MapView>
 
+    <Button
+        android:id="@+id/friends_circle"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="270dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/friends" />
+
 </FrameLayout>
