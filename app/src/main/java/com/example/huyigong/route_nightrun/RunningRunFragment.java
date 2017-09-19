@@ -12,9 +12,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.SwitchCompat;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,26 +24,42 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
+import com.esri.arcgisruntime.data.Feature;
+import com.esri.arcgisruntime.data.FeatureCollection;
+import com.esri.arcgisruntime.data.FeatureCollectionTable;
+import com.esri.arcgisruntime.data.FeatureQueryResult;
+import com.esri.arcgisruntime.data.FeatureTable;
+import com.esri.arcgisruntime.data.Field;
+import com.esri.arcgisruntime.data.QueryParameters;
+import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
+import com.esri.arcgisruntime.geometry.GeometryType;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.PointCollection;
 import com.esri.arcgisruntime.geometry.Polyline;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
+import com.esri.arcgisruntime.layers.FeatureCollectionLayer;
+import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
+import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.Symbol;
 import com.example.huyigong.route_nightrun.Substances.DrinksInfo;
 import com.example.huyigong.route_nightrun.helpers.CalculateGeometryApi;
@@ -58,9 +76,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -198,8 +218,11 @@ public class RunningRunFragment extends Fragment {
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
-    ArrayList<Point> roadlampList = new ArrayList<Point>();
+    FeatureCollectionLayer mFeatureCollectionLayer = null;
     Point userPosition = null;
+
+    final int ROADLAMP_LAYER_INDEX = 0;
+    final int ROADLAMP_BROKEN_LAYER_INDEX = 1;
 
     long startTimeMiliseconds = 0;
     long endTimeMiliseconds = 0;
@@ -356,17 +379,69 @@ public class RunningRunFragment extends Fragment {
         mMapView.getGraphicsOverlays().add(mPositionOverlay);
         mMapView.setMap(mArcGISMap);
 
+        //添加要素 - 路灯
+        ArrayList<Field> roadlampFeatures = new ArrayList<Field>();
+        {
+            roadlampFeatures.add(Field.createInteger("id", "标识号"));
+            roadlampFeatures.add(Field.createDouble("lng", "经度"));
+            roadlampFeatures.add(Field.createDouble("lat", "纬度"));
+            roadlampFeatures.add(Field.createString("address", "位置", 255));
+            roadlampFeatures.add(Field.createString("isBroken", "是否损坏", 5));
+            roadlampFeatures.add(Field.createString("onTime", "开灯时间", 10));
+            roadlampFeatures.add(Field.createString("offTime", "关灯时间", 10));
+        }
+        ArrayList<FeatureCollectionTable> featureCollectionTables = new ArrayList<FeatureCollectionTable>();
+        FeatureCollectionTable roadlampFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        {
+            PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.roadlamp, null));
+            {
+                pictureMarkerSymbol.setHeight(30);
+                pictureMarkerSymbol.setWidth(30);
+                pictureMarkerSymbol.setOffsetX(0);
+                pictureMarkerSymbol.setOffsetY(15);
+            }
+            SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
+            roadlampFeatureCollectionTable.setRenderer(simpleRenderer);
+            roadlampFeatureCollectionTable.setTitle("RoadlampInfo");
+            featureCollectionTables.add(roadlampFeatureCollectionTable);
+        }
+
+        FeatureCollectionTable roadlampBrokenFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        {
+            PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.roadlamp_broken, null));
+            {
+                pictureMarkerSymbol.setHeight(30);
+                pictureMarkerSymbol.setWidth(30);
+                pictureMarkerSymbol.setOffsetX(0);
+                pictureMarkerSymbol.setOffsetY(15);
+            }
+            SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
+            roadlampBrokenFeatureCollectionTable.setRenderer(simpleRenderer);
+            roadlampBrokenFeatureCollectionTable.setTitle("RoadlampBrokenInfo");
+            featureCollectionTables.add(roadlampBrokenFeatureCollectionTable);
+        }
+        FeatureCollection featureCollection = new FeatureCollection(featureCollectionTables);
+        mFeatureCollectionLayer = new FeatureCollectionLayer(featureCollection);
+        mFeatureCollectionLayer.setVisible(false);
+        mArcGISMap.getOperationalLayers().add(mFeatureCollectionLayer);
+
         mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(getContext(), mMapView)
         {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent event)
             {
-                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
-                    return false;
                 Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
-                stopPointsForShortestRoute.add(point);
-                DrawPoint(point, R.drawable.flag, 30, 30, 15, 15);
-                return false;
+                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
+                {
+                    ShowRoadLampInfo(point);
+                    return false;
+                }
+                else
+                {
+                    stopPointsForShortestRoute.add(point);
+                    DrawPoint(point, R.drawable.flag, 30, 30, 15, 15);
+                    return false;
+                }
             }
 
             @Override
@@ -750,34 +825,28 @@ public class RunningRunFragment extends Fragment {
                     JSONTokener jsonParser = new JSONTokener(response);
                     JSONObject json = (JSONObject) jsonParser.nextValue();
                     JSONArray pointsArray = json.getJSONArray("RoadLamps");
+
+                    FeatureTable roadlampFeatureTable = mFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX);
+
                     for(int i=0;i<pointsArray.length();i++)
                     {
                         JSONObject tempRoadLamp = (JSONObject) pointsArray.get(i);
-                        final double pointLng = tempRoadLamp.getDouble("Lng");
-                        final double pointLat = tempRoadLamp.getDouble("Lat");
-                        int status = tempRoadLamp.getInt("IsBroken");
-                        final boolean isBroken = (status == 0 ? false : true);
-                        final Point tempPoint = new Point(pointLng, pointLat, SpatialReferences.getWgs84());
-
-                        BitmapDrawable pinBitmap = null;
-                        if(isBroken)
-                            pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.roadlamp_broken);
+                        int lampStatus = tempRoadLamp.getInt("IsBroken");
+                        Feature tempFeature = roadlampFeatureTable.createFeature();
+                        {
+                            tempFeature.getAttributes().put("id", tempRoadLamp.getInt("ID"));
+                            tempFeature.getAttributes().put("lng", tempRoadLamp.getDouble("Lng"));
+                            tempFeature.getAttributes().put("lat", tempRoadLamp.getDouble("Lat"));
+                            tempFeature.getAttributes().put("isBroken", lampStatus == 0 ? "false" : "true");
+                            tempFeature.getAttributes().put("address", "武汉大学");
+                            tempFeature.getAttributes().put("onTime", "18:00");
+                            tempFeature.getAttributes().put("offTime", "05:00");
+                            tempFeature.setGeometry(new Point(tempRoadLamp.getDouble("Lng"), tempRoadLamp.getDouble("Lat"), SpatialReferences.getWgs84()));
+                        }
+                        if(lampStatus == 0)
+                            mFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX).addFeatureAsync(tempFeature);
                         else
-                            pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.roadlamp);
-                        final PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol(pinBitmap);
-                        pictureMarkerSymbol.setHeight(30);
-                        pictureMarkerSymbol.setWidth(30);
-                        pictureMarkerSymbol.setOffsetX(0);
-                        pictureMarkerSymbol.setOffsetY(15);
-                        pictureMarkerSymbol.loadAsync();
-                        pictureMarkerSymbol.addDoneLoadingListener(new Runnable() {
-                            @Override
-                            public void run() {
-                                roadlampList.add(tempPoint);
-                                Graphic g = new Graphic(tempPoint, pictureMarkerSymbol);
-                                mDrinkOverlay.getGraphics().add(g);
-                            }
-                        });
+                            mFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_BROKEN_LAYER_INDEX).addFeatureAsync(tempFeature);
                     }
                 }
                 catch (Exception ex)
@@ -786,6 +855,19 @@ public class RunningRunFragment extends Fragment {
                 }
             }
         };
+
+        SwitchCompat lamp_switch = (SwitchCompat)view.findViewById(R.id.show_lamp_switch);
+        {
+            lamp_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(b)
+                        mFeatureCollectionLayer.setVisible(true);
+                    else
+                        mFeatureCollectionLayer.setVisible(false);
+                }
+            });
+        }
 
         //显示路灯
         ShowRoadLamps(new Point(-180, 90), new Point(180, -90));
@@ -1159,6 +1241,86 @@ public class RunningRunFragment extends Fragment {
             }
         });
         showNearDrinkThread.start();
+    }
+
+    public void ShowRoadLampInfo(Point clickPoint)
+    {
+        if(mFeatureCollectionLayer.isVisible())
+        {
+            double mapTolerance = 15 * mMapView.getUnitsPerDensityIndependentPixel();
+            Envelope envelope = new Envelope(clickPoint.getX() - mapTolerance, clickPoint.getY() - mapTolerance, clickPoint.getX() + mapTolerance, clickPoint.getY() + mapTolerance, mArcGISMap.getSpatialReference());
+            QueryParameters query = new QueryParameters();
+            query.setGeometry(envelope);
+            final ListenableFuture<FeatureQueryResult> feature = mFeatureCollectionLayer.getLayers().get(ROADLAMP_LAYER_INDEX).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
+            feature.addDoneListener(new Runnable() {
+                @Override
+                public void run() {
+                    try
+                    {
+                        FeatureQueryResult result = feature.get();
+                        Iterator<Feature> iterator = result.iterator();
+                        while (iterator.hasNext()) {
+                            final Feature feature = iterator.next();
+                            final Callout callout = mMapView.getCallout();
+                            callout.setLocation((Point) feature.getGeometry());
+                            callout.setStyle(new Callout.Style(getContext(), R.xml.calloutstyle));
+                            View calloutView = getActivity().getLayoutInflater().inflate(R.layout.show_lamp_info_layout, null);
+                            ((TextView) calloutView.findViewById(R.id.lamp_address)).setText("位置：" + (String) feature.getAttributes().get("address"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_is_broken)).setText("是否损坏：否");
+                            ((TextView) calloutView.findViewById(R.id.lamp_on_time)).setText("开灯时间：" + (String) feature.getAttributes().get("onTime"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_off_time)).setText("关灯时间：" + (String) feature.getAttributes().get("offTime"));
+                            ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    callout.dismiss();
+                                }
+                            });
+                            callout.setContent(calloutView);
+                            callout.show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            final ListenableFuture<FeatureQueryResult> feature_brokenlamp = mFeatureCollectionLayer.getLayers().get(ROADLAMP_BROKEN_LAYER_INDEX).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
+            feature.addDoneListener(new Runnable() {
+                @Override
+                public void run() {
+                    try
+                    {
+                        FeatureQueryResult result = feature_brokenlamp.get();
+                        Iterator<Feature> iterator = result.iterator();
+                        while (iterator.hasNext()) {
+                            final Feature feature = iterator.next();
+                            final Callout callout = mMapView.getCallout();
+                            callout.setLocation((Point) feature.getGeometry());
+                            callout.setStyle(new Callout.Style(getContext(), R.xml.calloutstyle));
+                            View calloutView = getActivity().getLayoutInflater().inflate(R.layout.show_lamp_info_layout, null);
+                            ((TextView) calloutView.findViewById(R.id.lamp_address)).setText("位置：" + (String) feature.getAttributes().get("address"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_is_broken)).setText("是否损坏：是");
+                            ((TextView) calloutView.findViewById(R.id.lamp_on_time)).setText("开灯时间：" + (String) feature.getAttributes().get("onTime"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_off_time)).setText("关灯时间：" + (String) feature.getAttributes().get("offTime"));
+                            ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    callout.dismiss();
+                                }
+                            });
+                            callout.setContent(calloutView);
+                            callout.show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        }
     }
 
     private JSONObject GenerateRouteJson(int userId, ArrayList<Point> pointsList, double distanceOfRoute, double distanceOfUserRunning, long during)

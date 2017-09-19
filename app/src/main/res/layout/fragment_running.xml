@@ -213,8 +213,8 @@
             android:textColor="@color/white"
             android:textStyle="bold" />
 
-        <RadioButton
-            android:id="@+id/showLight"
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/show_lamp_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="100dp"
