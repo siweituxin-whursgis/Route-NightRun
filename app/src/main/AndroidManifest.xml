@@ -31,11 +31,6 @@
             android:label="Running" />
         <activity android:name=".NightRunActivity">
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
         </activity>
         <activity android:name=".run_competition" />
@@ -78,6 +73,11 @@
             android:name=".Before_Login"
             android:label="夜跑小助手"
             android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".forum"
             android:label="跑友秀"></activity>
