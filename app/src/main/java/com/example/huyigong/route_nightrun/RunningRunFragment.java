@@ -86,10 +86,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -185,25 +188,48 @@ public class RunningRunFragment extends Fragment {
 
     public int UserId = 39;
 
+    //地图现处状态枚举
     enum fragmentStatus{
+        //只显示地图
         ShowMap,
+        //按路径长度规划，还未开始
         RoutingByDistance_Unstart,
+        //按路径站点规划，还未开始
         RoutingByStops_Unstart,
+        //按路径长度规划
         RoutingByDistance,
+        //按路径站点规划
         RoutingByStops,
+        //跑步暂停
         Pause,
     };
+
+    //地图现处状态枚举
     fragmentStatus mFragmentStatus = fragmentStatus.ShowMap;
-    double planningDistance = -1;
-    double userRuningDistance = 0;
-    boolean haveGotRoute = false;
-    boolean showLoctionAlways = false;
+
+    //规划的路径
     ArrayList<Point> planningRoute = new ArrayList<Point>();
+
+    //规划路径长度
+    double planningDistance = -1;
+
+    //用户夜跑长度，靠gps定位计算
+    double userRuningDistance = 0;
+
+    //是否获得路径
+    boolean haveGotRoute = false;
+
+    //是否一直显示用户所处位置
+    boolean showLoctionAlways = false;
+
+    //处理器
     Handler mShowNearDrinksHanler;
     Handler mGenerateStopPointsHandler;
     Handler mShowRoadLampHandler;
-    Handler mShowInterestViewsHandle;
+    Handler mShowInterestViewsHandler;
+    Handler mSetInterestViewSourceHandler;
 
+    //控件
     LinearLayout layoutOfRoutingButton = null;
     GridLayout layoutOfStartButton = null;
     GridLayout layoutOfContinueButton = null;
@@ -215,36 +241,58 @@ public class RunningRunFragment extends Fragment {
     Button btnContinue = null;
     Button btnClearPoints = null;
     Button btnReturnInit = null;
-    MapView mMapView;   // 地图
+
+    //地图
+    MapView mMapView;
     ArcGISMap mArcGISMap;
-    Graphic mCurPointGraphic; // 当前点
+
+    //当前点
+    Graphic mCurPointGraphic;
     PictureMarkerSymbol mCurrentPointSymbol;
+
+    //几何要素图层
     GraphicsOverlay mPointsOverlay;
     GraphicsOverlay mPositionOverlay;
     GraphicsOverlay mLinesOverlay;
     GraphicsOverlay mPolygonsOverlay;
     GraphicsOverlay mDrinkOverlay;
     GraphicsOverlay mOthersOverlay;
-    LocationManager mLocationManager; // 定位服务
+
+    // 定位服务
+    LocationManager mLocationManager;
+
+    //按长度规划路径的预定站点
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
+
+    //按站点规划的站点
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
 
+    //路灯要素集图层
     FeatureCollectionLayer mRoadlampsFeatureCollectionLayer = null;
     final int ROADLAMP_LAYER_INDEX = 0;
     final int ROADLAMP_BROKEN_LAYER_INDEX = 1;
 
+    //风景点要素集图层
     FeatureCollectionLayer mInterestViewsFeatureCollectionLayer = null;
     final int INTEREST_VIEWS_LAYER_INDEX = 0;
 
+    //用户位置
     Point userPosition = null;
 
+    //定时更新路灯信息
+    Timer search_show_roadlamp_timer = new Timer();
+    final long SEARCH_SHOW_ROADLAMP_TIMER_PERIOD = 120000;
+    final double SEARCH_ROADLAMP_RADIUS = 500;
+
+    //跑步开始和结束时间
     long startTimeMiliseconds = 0;
     long endTimeMiliseconds = 0;
 
+    //是否正在调试
     final boolean DEBUG = false;
 
-    //用于引用传递
+    //用于引用传递（脑袋短路的才写这个，但我不想改了 !@_@! ）
     public class DoubleReferance{
         private double mValue;
 
@@ -255,6 +303,7 @@ public class RunningRunFragment extends Fragment {
         public double getValue() { return mValue; }
     }
 
+    //定位监听
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
@@ -268,8 +317,10 @@ public class RunningRunFragment extends Fragment {
                 Point lastPoint;
                 if(userPosition == null)
                 {
+                    //第一次获得用户位置
                     userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
                     lastPoint = userPosition;
+                    ShowNearRoadLamps(userPosition, userPosition, SEARCH_ROADLAMP_RADIUS);
                 }
                 else
                 {
@@ -406,7 +457,7 @@ public class RunningRunFragment extends Fragment {
             roadlampFeatures.add(Field.createString("offTime", "关灯时间", 10));
         }
         ArrayList<FeatureCollectionTable> raodlampFeatureCollectionTables = new ArrayList<FeatureCollectionTable>();
-        FeatureCollectionTable roadlampFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        final FeatureCollectionTable roadlampFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
         {
             PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.roadlamp, null));
             {
@@ -421,7 +472,7 @@ public class RunningRunFragment extends Fragment {
             raodlampFeatureCollectionTables.add(roadlampFeatureCollectionTable);
         }
 
-        FeatureCollectionTable roadlampBrokenFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        final FeatureCollectionTable roadlampBrokenFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
         {
             PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.roadlamp_broken, null));
             {
@@ -477,11 +528,8 @@ public class RunningRunFragment extends Fragment {
                 Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
                 if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
                 {
-                    if(!ShowRoadLampInfo(point) && !ShowInterestViewsInfo(point))
-                    {
-                        //do nothing.
-                        //if()中的函数会返回boolean类型来决定是否执行下一个函数
-                    }
+                    ShowRoadLampInfo(point);
+                    ShowInterestViewsInfo(point);
                     return false;
                 }
                 else
@@ -639,7 +687,7 @@ public class RunningRunFragment extends Fragment {
                                                 else if(templat > maxLat)
                                                     maxLat = templat;
                                             }
-                                            ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()));
+                                            ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()), 200);
                                             mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
                                         }
                                     });
@@ -802,9 +850,15 @@ public class RunningRunFragment extends Fragment {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(b)
+                    {
+                        if(userPosition != null)
+                            mMapView.setViewpointCenterAsync(userPosition);
                         mRoadlampsFeatureCollectionLayer.setVisible(true);
+                    }
                     else
+                    {
                         mRoadlampsFeatureCollectionLayer.setVisible(false);
+                    }
                 }
             });
         }
@@ -815,9 +869,39 @@ public class RunningRunFragment extends Fragment {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                     if(b)
+                    {
+                        if(userPosition != null)
+                            mMapView.setViewpointCenterAsync(userPosition);
                         mInterestViewsFeatureCollectionLayer.setVisible(true);
+                    }
                     else
                         mInterestViewsFeatureCollectionLayer.setVisible(false);
+                }
+            });
+        }
+
+        SwitchCompat drink_switch = (SwitchCompat)view.findViewById(R.id.drink_switch);
+        {
+            drink_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(b)
+                    {
+                        if(userPosition == null)
+                        {
+                            ShowToast("无法定位您到当前的位置", Toast.LENGTH_SHORT);
+                            return;
+                        }
+                        else
+                        {
+                            mMapView.setViewpointCenterAsync(userPosition);
+                            if(!haveGotRoute)
+                                ShowNearDrinks(userPosition, userPosition, 500);
+                        }
+                        mDrinkOverlay.setVisible(true);
+                    }
+                    else
+                        mDrinkOverlay.setVisible(false);
                 }
             });
         }
@@ -831,6 +915,8 @@ public class RunningRunFragment extends Fragment {
                     JSONTokener jsonParser = new JSONTokener(response);
                     JSONObject json = (JSONObject)jsonParser.nextValue();
                     JSONArray neardrinksArray = json.getJSONArray("neardrinks");
+                    mDrinkOverlay.getGraphics().clear();
+                    drinkList.clear();
                     for(int i=0;i<neardrinksArray.length();i++)
                     {
                         JSONObject tempDrink = (JSONObject) neardrinksArray.get(i);
@@ -853,6 +939,8 @@ public class RunningRunFragment extends Fragment {
                                 drinkList.add(di);
                                 Graphic g = new Graphic(new Point(drinkLng, drinkLat, SpatialReferences.getWgs84()), pictureMarkerSymbol);
                                 mDrinkOverlay.getGraphics().add(g);
+                                SwitchCompat drink_switch = (SwitchCompat)getActivity().findViewById(R.id.drink_switch);
+                                drink_switch.setChecked(true);
                             }
                         });
                     }
@@ -902,6 +990,27 @@ public class RunningRunFragment extends Fragment {
                     JSONObject json = (JSONObject) jsonParser.nextValue();
                     JSONArray pointsArray = json.getJSONArray("RoadLamps");
 
+                    boolean roadlamp_Visible = mRoadlampsFeatureCollectionLayer.isVisible();
+                    if(roadlamp_Visible)
+                    {
+                        mRoadlampsFeatureCollectionLayer.setVisible(false);
+                        ShowToast("正在更新附近路灯信息", Toast.LENGTH_SHORT);
+                    }
+                    Iterator<Feature> featureIterator = mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX).iterator();
+                    Iterator<Feature> featureIterator_broken = mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_BROKEN_LAYER_INDEX).iterator();
+                    while (featureIterator.hasNext())
+                    {
+                        Feature feature = featureIterator.next();
+                        if(roadlampFeatureCollectionTable.canDelete(feature))
+                            roadlampFeatureCollectionTable.deleteFeatureAsync(feature);
+                    }
+                    while (featureIterator_broken.hasNext())
+                    {
+                        Feature feature = featureIterator_broken.next();
+                        if(roadlampBrokenFeatureCollectionTable.canDelete(feature))
+                            roadlampBrokenFeatureCollectionTable.deleteFeatureAsync(feature);
+                    }
+
                     FeatureTable roadlampFeatureTable = mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX);
 
                     for(int i=0;i<pointsArray.length();i++)
@@ -920,10 +1029,12 @@ public class RunningRunFragment extends Fragment {
                             tempFeature.setGeometry(new Point(tempRoadLamp.getDouble("Lng"), tempRoadLamp.getDouble("Lat"), SpatialReferences.getWgs84()));
                         }
                         if(lampStatus == 0)
-                            mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX).addFeatureAsync(tempFeature);
+                            roadlampFeatureCollectionTable.addFeatureAsync(tempFeature);
                         else
-                            mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_BROKEN_LAYER_INDEX).addFeatureAsync(tempFeature);
+                            roadlampBrokenFeatureCollectionTable.addFeatureAsync(tempFeature);
                     }
+                    if(roadlamp_Visible)
+                        mRoadlampsFeatureCollectionLayer.setVisible(true);
                 }
                 catch (Exception ex)
                 {
@@ -932,7 +1043,7 @@ public class RunningRunFragment extends Fragment {
             }
         };
 
-        mShowInterestViewsHandle = new Handler(){
+        mShowInterestViewsHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
                 try
@@ -966,8 +1077,30 @@ public class RunningRunFragment extends Fragment {
             }
         };
 
-        //加载路灯
-        ShowRoadLamps(new Point(-180, 90), new Point(180, -90));
+        mSetInterestViewSourceHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                try
+                {
+                    Bitmap bitmap = (Bitmap) msg.obj;
+                    if(bitmap != null)
+                        ((AppCompatImageView)getActivity().findViewById(R.id.view_image)).setImageBitmap(bitmap);
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        search_show_roadlamp_timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                //加载附近search_roadlamp_radius米内的路灯
+                if(userPosition != null)
+                    ShowNearRoadLamps(userPosition, userPosition, SEARCH_ROADLAMP_RADIUS);
+            }
+        }, 0, SEARCH_SHOW_ROADLAMP_TIMER_PERIOD);
 
         //加载景点
         ShowInterestViews(new Point(-180, 90), new Point(180, -90));
@@ -1185,7 +1318,7 @@ public class RunningRunFragment extends Fragment {
                     else if(templat > maxLat)
                         maxLat = templat;
                 }
-                ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()));
+                ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()), 200);
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1264,13 +1397,15 @@ public class RunningRunFragment extends Fragment {
                 planningRoute.clear();
                 startTimeMiliseconds = 0;
                 endTimeMiliseconds = 0;
+                ((SwitchCompat)getActivity().findViewById(R.id.show_lamp_switch)).setChecked(false);
+                ((SwitchCompat)getActivity().findViewById(R.id.drink_switch)).setChecked(false);
+                ((SwitchCompat)getActivity().findViewById(R.id.interest_view_switch)).setChecked(false);
             }
         });
     }
 
-    private void ShowNearDrinks(Point leftTop, Point rightBottom)
+    private void ShowNearDrinks(Point leftTop, Point rightBottom, double tolerance)
     {
-        double tolerance = 200;
         Point leftTopMkt = (Point)GeometryEngine.project(leftTop, SpatialReferences.getWebMercator());
         Point rightBottomMkt = (Point)GeometryEngine.project(rightBottom, SpatialReferences.getWebMercator());
         final double minLngMkt = leftTopMkt.getX() - tolerance;
@@ -1314,12 +1449,22 @@ public class RunningRunFragment extends Fragment {
         showNearDrinkThread.start();
     }
 
-    public void ShowRoadLamps(Point leftTop, Point rightBottom)
+    public void ShowNearRoadLamps(Point leftTop, Point rightBottom, double tolerance)
     {
-        final double minLng = leftTop.getX();
-        final double maxLng = rightBottom.getX();
-        final double minLat = rightBottom.getY();
-        final double maxLat = leftTop.getY();
+        Point leftTopMkt = (Point)GeometryEngine.project(leftTop, SpatialReferences.getWebMercator());
+        Point rightBottomMkt = (Point)GeometryEngine.project(rightBottom, SpatialReferences.getWebMercator());
+        final double minLngMkt = leftTopMkt.getX() - tolerance;
+        final double maxLngMkt = rightBottomMkt.getX() + tolerance;
+        final double minLatMkt = rightBottomMkt.getY() - tolerance;
+        final double maxLatMkt = leftTopMkt.getY() + tolerance;
+
+        Point leftTopOpt = (Point)GeometryEngine.project(new Point(minLngMkt, maxLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
+        Point rightBottomMktOpt = (Point)GeometryEngine.project(new Point(maxLngMkt, minLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
+
+        final double minLng = leftTopOpt.getX();
+        final double maxLng = rightBottomMktOpt.getX();
+        final double minLat = rightBottomMktOpt.getY();
+        final double maxLat = leftTopOpt.getY();
         Thread showNearDrinkThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1369,7 +1514,7 @@ public class RunningRunFragment extends Fragment {
                     bundle.putString("InterestViews", content);
                     Message message = new Message();
                     message.setData(bundle);
-                    mShowInterestViewsHandle.sendMessage(message);
+                    mShowInterestViewsHandler.sendMessage(message);
                 }
                 catch (Exception e)
                 {
@@ -1381,7 +1526,7 @@ public class RunningRunFragment extends Fragment {
     }
 
     /*
-    * return:如果路灯要素图层可见则返回true，否则返回false
+    * return:如果路灯要素图层可见且选中要素则返回true，否则返回false
     * */
     public boolean ShowRoadLampInfo(Point clickPoint)
     {
@@ -1494,9 +1639,18 @@ public class RunningRunFragment extends Fragment {
                             callout.setLocation((Point) feature.getGeometry());
                             callout.setStyle(new Callout.Style(getContext(), R.xml.calloutstyle));
                             View calloutView = getActivity().getLayoutInflater().inflate(R.layout.show_interest_views_layers, null);
-                            String imageUrl = getString(R.string.webapi_host) + getString(R.string.webapi_image_path) + (String) feature.getAttributes().get("imageName");
-                            ImageManagerImpl.registerInstance();
-                            x.image().bind((AppCompatImageView)calloutView.findViewById(R.id.view_image), imageUrl, ImageOptions.DEFAULT);
+                            final String imageUrlPath = getString(R.string.webapi_host) + getString(R.string.webapi_image_path);
+//                            ImageManagerImpl.registerInstance();
+//                            x.image().bind((AppCompatImageView)calloutView.findViewById(R.id.view_image), imageUrl, ImageOptions.DEFAULT);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Message msg = mSetInterestViewSourceHandler.obtainMessage();
+                                    msg.obj = DownLoadImageFromNet(imageUrlPath, (String) feature.getAttributes().get("imageName"));
+                                    msg.what =0;
+                                    mSetInterestViewSourceHandler.sendMessage(msg);
+                                }
+                            }).start();
                             ((TextView) calloutView.findViewById(R.id.view_name)).setText("景点名称：" + (String) feature.getAttributes().get("name"));
                             ((TextView) calloutView.findViewById(R.id.view_description)).setText("景点简介：" + (String) feature.getAttributes().get("description"));
                             ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
@@ -1598,7 +1752,7 @@ public class RunningRunFragment extends Fragment {
     {
         if(distanceOfRoute < 200)
         {
-            ShowToast("本次跑步距离过短，将不上传数据库", Toast.LENGTH_SHORT);
+            ShowToast("本次跑步距离过短，将不上传服务器", Toast.LENGTH_SHORT);
             return false;
         }
         final int userId = id;
@@ -1644,4 +1798,32 @@ public class RunningRunFragment extends Fragment {
         }).start();
         return true;
     }
+
+    public static Bitmap DownLoadImageFromNet(String UrlPath, String UrlName)
+    {
+        Bitmap bitmap = null;
+        InputStream inputStream;
+        try {
+            URL url = new URL(UrlPath + URLEncoder.encode(UrlName, "UTF-8"));
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            {
+                httpURLConnection.setRequestProperty("contentType", "GBK");
+                httpURLConnection.setConnectTimeout(10000);
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.setReadTimeout(10000);
+            }
+            int requestCode = httpURLConnection.getResponseCode();
+            if(requestCode == 200)
+            {
+                inputStream = httpURLConnection.getInputStream();
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        return bitmap;
+    }
+
 }

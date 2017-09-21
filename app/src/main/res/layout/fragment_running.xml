@@ -207,8 +207,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="50dp"
             android:text="附近路灯"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_gravity="right" />
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/drink_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="15dp"
+            android:text="附近饮品店"
+            android:textColor="@color/colorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_gravity="right" />
@@ -220,6 +233,7 @@
             android:layout_marginRight="5dp"
             android:layout_marginTop="15dp"
             android:text="附近景点"
+            android:textColor="@color/colorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_gravity="right" />

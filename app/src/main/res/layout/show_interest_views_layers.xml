@@ -9,7 +9,8 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:maxWidth="220dp" >
         <TextView
             android:textSize="18sp"
             android:textColor="@color/colorPrimary"
@@ -36,9 +37,10 @@
 
         <android.support.v7.widget.AppCompatImageView
             android:id="@+id/view_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="220dp"
+            android:layout_height="165dp"
             android:layout_weight="1"
+            android:maxWidth="220dp"
             android:gravity="center" />
 
         <TextView
@@ -46,6 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:maxWidth="220dp"
             android:gravity="center"
             android:textAlignment="center" />
 
