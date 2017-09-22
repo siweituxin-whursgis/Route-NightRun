@@ -1,8 +1,12 @@
 package com.example.huyigong.route_nightrun;
 
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
@@ -11,10 +15,14 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.AppCompatImageView;
+import android.support.v7.widget.SwitchCompat;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,26 +30,42 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
+import com.esri.arcgisruntime.data.Feature;
+import com.esri.arcgisruntime.data.FeatureCollection;
+import com.esri.arcgisruntime.data.FeatureCollectionTable;
+import com.esri.arcgisruntime.data.FeatureQueryResult;
+import com.esri.arcgisruntime.data.FeatureTable;
+import com.esri.arcgisruntime.data.Field;
+import com.esri.arcgisruntime.data.QueryParameters;
+import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.GeometryEngine;
+import com.esri.arcgisruntime.geometry.GeometryType;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.PointCollection;
 import com.esri.arcgisruntime.geometry.Polyline;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
+import com.esri.arcgisruntime.layers.FeatureCollectionLayer;
+import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
+import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.Symbol;
 import com.example.huyigong.route_nightrun.Substances.DrinksInfo;
 import com.example.huyigong.route_nightrun.helpers.CalculateGeometryApi;
@@ -51,6 +75,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.xutils.ImageManager;
+import org.xutils.image.ImageManagerImpl;
+import org.xutils.image.ImageOptions;
+import org.xutils.x;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -58,9 +86,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -107,6 +139,7 @@ public class RunningRunFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        x.Ext.init((Application) getContext().getApplicationContext());
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -155,24 +188,48 @@ public class RunningRunFragment extends Fragment {
 
     public int UserId = 39;
 
+    //地图现处状态枚举
     enum fragmentStatus{
+        //只显示地图
         ShowMap,
+        //按路径长度规划，还未开始
         RoutingByDistance_Unstart,
+        //按路径站点规划，还未开始
         RoutingByStops_Unstart,
+        //按路径长度规划
         RoutingByDistance,
+        //按路径站点规划
         RoutingByStops,
+        //跑步暂停
         Pause,
     };
+
+    //地图现处状态枚举
     fragmentStatus mFragmentStatus = fragmentStatus.ShowMap;
-    double planningDistance = -1;
-    double userRuningDistance = 0;
-    boolean haveGotRoute = false;
-    boolean showLoctionAlways = false;
+
+    //规划的路径
     ArrayList<Point> planningRoute = new ArrayList<Point>();
+
+    //规划路径长度
+    double planningDistance = -1;
+
+    //用户夜跑长度，靠gps定位计算
+    double userRuningDistance = 0;
+
+    //是否获得路径
+    boolean haveGotRoute = false;
+
+    //是否一直显示用户所处位置
+    boolean showLoctionAlways = false;
+
+    //处理器
     Handler mShowNearDrinksHanler;
     Handler mGenerateStopPointsHandler;
     Handler mShowRoadLampHandler;
+    Handler mShowInterestViewsHandler;
+    Handler mSetInterestViewSourceHandler;
 
+    //控件
     LinearLayout layoutOfRoutingButton = null;
     GridLayout layoutOfStartButton = null;
     GridLayout layoutOfContinueButton = null;
@@ -184,29 +241,58 @@ public class RunningRunFragment extends Fragment {
     Button btnContinue = null;
     Button btnClearPoints = null;
     Button btnReturnInit = null;
-    MapView mMapView;   // 地图
+
+    //地图
+    MapView mMapView;
     ArcGISMap mArcGISMap;
-    Graphic mCurPointGraphic; // 当前点
+
+    //当前点
+    Graphic mCurPointGraphic;
     PictureMarkerSymbol mCurrentPointSymbol;
+
+    //几何要素图层
     GraphicsOverlay mPointsOverlay;
     GraphicsOverlay mPositionOverlay;
     GraphicsOverlay mLinesOverlay;
     GraphicsOverlay mPolygonsOverlay;
     GraphicsOverlay mDrinkOverlay;
     GraphicsOverlay mOthersOverlay;
-    LocationManager mLocationManager; // 定位服务
+
+    // 定位服务
+    LocationManager mLocationManager;
+
+    //按长度规划路径的预定站点
     ArrayList<Point> allStopPointsList = new ArrayList<Point>();
+
+    //按站点规划的站点
     ArrayList<Point> stopPointsForShortestRoute = new ArrayList<Point>();
     ArrayList<DrinksInfo> drinkList = new ArrayList<DrinksInfo>();
-    ArrayList<Point> roadlampList = new ArrayList<Point>();
+
+    //路灯要素集图层
+    FeatureCollectionLayer mRoadlampsFeatureCollectionLayer = null;
+    final int ROADLAMP_LAYER_INDEX = 0;
+    final int ROADLAMP_BROKEN_LAYER_INDEX = 1;
+
+    //风景点要素集图层
+    FeatureCollectionLayer mInterestViewsFeatureCollectionLayer = null;
+    final int INTEREST_VIEWS_LAYER_INDEX = 0;
+
+    //用户位置
     Point userPosition = null;
 
+    //定时更新路灯信息
+    Timer search_show_roadlamp_timer = new Timer();
+    final long SEARCH_SHOW_ROADLAMP_TIMER_PERIOD = 120000;
+    final double SEARCH_ROADLAMP_RADIUS = 500;
+
+    //跑步开始和结束时间
     long startTimeMiliseconds = 0;
     long endTimeMiliseconds = 0;
 
+    //是否正在调试
     final boolean DEBUG = false;
 
-    //用于引用传递
+    //用于引用传递（脑袋短路的才写这个，但我不想改了 !@_@! ）
     public class DoubleReferance{
         private double mValue;
 
@@ -217,6 +303,7 @@ public class RunningRunFragment extends Fragment {
         public double getValue() { return mValue; }
     }
 
+    //定位监听
     LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
@@ -230,8 +317,10 @@ public class RunningRunFragment extends Fragment {
                 Point lastPoint;
                 if(userPosition == null)
                 {
+                    //第一次获得用户位置
                     userPosition = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
                     lastPoint = userPosition;
+                    ShowNearRoadLamps(userPosition, userPosition, SEARCH_ROADLAMP_RADIUS);
                 }
                 else
                 {
@@ -356,17 +445,99 @@ public class RunningRunFragment extends Fragment {
         mMapView.getGraphicsOverlays().add(mPositionOverlay);
         mMapView.setMap(mArcGISMap);
 
+        //添加要素 - 路灯
+        ArrayList<Field> roadlampFeatures = new ArrayList<Field>();
+        {
+            roadlampFeatures.add(Field.createInteger("id", "标识号"));
+            roadlampFeatures.add(Field.createDouble("lng", "经度"));
+            roadlampFeatures.add(Field.createDouble("lat", "纬度"));
+            roadlampFeatures.add(Field.createString("address", "位置", 255));
+            roadlampFeatures.add(Field.createString("isBroken", "是否损坏", 5));
+            roadlampFeatures.add(Field.createString("onTime", "开灯时间", 10));
+            roadlampFeatures.add(Field.createString("offTime", "关灯时间", 10));
+        }
+        ArrayList<FeatureCollectionTable> raodlampFeatureCollectionTables = new ArrayList<FeatureCollectionTable>();
+        final FeatureCollectionTable roadlampFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        {
+            PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.roadlamp, null));
+            {
+                pictureMarkerSymbol.setHeight(30);
+                pictureMarkerSymbol.setWidth(30);
+                pictureMarkerSymbol.setOffsetX(0);
+                pictureMarkerSymbol.setOffsetY(15);
+            }
+            SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
+            roadlampFeatureCollectionTable.setRenderer(simpleRenderer);
+            roadlampFeatureCollectionTable.setTitle("RoadlampInfo");
+            raodlampFeatureCollectionTables.add(roadlampFeatureCollectionTable);
+        }
+
+        final FeatureCollectionTable roadlampBrokenFeatureCollectionTable = new FeatureCollectionTable(roadlampFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        {
+            PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.roadlamp_broken, null));
+            {
+                pictureMarkerSymbol.setHeight(30);
+                pictureMarkerSymbol.setWidth(30);
+                pictureMarkerSymbol.setOffsetX(0);
+                pictureMarkerSymbol.setOffsetY(15);
+            }
+            SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
+            roadlampBrokenFeatureCollectionTable.setRenderer(simpleRenderer);
+            roadlampBrokenFeatureCollectionTable.setTitle("RoadlampBrokenInfo");
+            raodlampFeatureCollectionTables.add(roadlampBrokenFeatureCollectionTable);
+        }
+        //将要素集添加到要素图层
+        FeatureCollection roadlampFeatureCollection = new FeatureCollection(raodlampFeatureCollectionTables);
+        mRoadlampsFeatureCollectionLayer = new FeatureCollectionLayer(roadlampFeatureCollection);
+        mRoadlampsFeatureCollectionLayer.setVisible(false);
+        mArcGISMap.getOperationalLayers().add(mRoadlampsFeatureCollectionLayer);
+
+        //添加要素 - 景点
+        ArrayList<Field> interestViewsFeatures = new ArrayList<Field>();
+        {
+            interestViewsFeatures.add(Field.createDouble("lng", "经度"));
+            interestViewsFeatures.add(Field.createDouble("lat", "纬度"));
+            interestViewsFeatures.add(Field.createString("name", "景点名称", 20));
+            interestViewsFeatures.add(Field.createString("description", "景点简介", 255));
+            interestViewsFeatures.add(Field.createString("imageName", "景区图片", 50));
+        }
+        ArrayList<FeatureCollectionTable> insteretViewFeatureCollectionTables = new ArrayList<FeatureCollectionTable>();
+        FeatureCollectionTable interestViewsFeatureCollectionTable = new FeatureCollectionTable(interestViewsFeatures, GeometryType.POINT, SpatialReferences.getWgs84());
+        {
+            PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol((BitmapDrawable)getResources().getDrawable(R.drawable.ount, null));
+            {
+                pictureMarkerSymbol.setHeight(30);
+                pictureMarkerSymbol.setWidth(30);
+            }
+            SimpleRenderer simpleRenderer = new SimpleRenderer(pictureMarkerSymbol);
+            interestViewsFeatureCollectionTable.setRenderer(simpleRenderer);
+            interestViewsFeatureCollectionTable.setTitle("InterestViews");
+            insteretViewFeatureCollectionTables.add(interestViewsFeatureCollectionTable);
+        }
+        //将要素集添加到要素图层
+        FeatureCollection interestViewsFeatureCollection = new FeatureCollection(insteretViewFeatureCollectionTables);
+        mInterestViewsFeatureCollectionLayer = new FeatureCollectionLayer(interestViewsFeatureCollection);
+        mInterestViewsFeatureCollectionLayer.setVisible(false);
+        mArcGISMap.getOperationalLayers().add(mInterestViewsFeatureCollectionLayer);
+
         mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(getContext(), mMapView)
         {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent event)
             {
-                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
-                    return false;
                 Point point = mMapView.screenToLocation(new android.graphics.Point((int)event.getX(), (int)event.getY()));
-                stopPointsForShortestRoute.add(point);
-                DrawPoint(point, R.drawable.flag, 30, 30, 15, 15);
-                return false;
+                if(mFragmentStatus != fragmentStatus.RoutingByStops_Unstart)
+                {
+                    ShowRoadLampInfo(point);
+                    ShowInterestViewsInfo(point);
+                    return false;
+                }
+                else
+                {
+                    stopPointsForShortestRoute.add(point);
+                    DrawPoint(point, R.drawable.flag, 30, 30, 15, 15);
+                    return false;
+                }
             }
 
             @Override
@@ -456,6 +627,7 @@ public class RunningRunFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int which) {
                             try
                             {
+                                InitFragment();
                                 planningDistance = Double.parseDouble(inputServer.getText().toString());
                                 if(planningDistance > 5000 || planningDistance < 500)
                                 {
@@ -515,7 +687,7 @@ public class RunningRunFragment extends Fragment {
                                                 else if(templat > maxLat)
                                                     maxLat = templat;
                                             }
-                                            ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()));
+                                            ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()), 200);
                                             mFragmentStatus = fragmentStatus.RoutingByDistance_Unstart;
                                         }
                                     });
@@ -545,6 +717,7 @@ public class RunningRunFragment extends Fragment {
                         ShowToast("获取用户位置失败，请检查定位服务是否开启", Toast.LENGTH_SHORT);
                         return;
                     }
+                    InitFragment();
                     ShowToast("双击确定经过站点，点击\"开始夜跑按钮\"产生夜跑路线", Toast.LENGTH_LONG);
                     layoutOfRoutingButton.setVisibility(View.GONE);
                     layoutOfStartButton.setVisibility(View.VISIBLE);
@@ -595,7 +768,7 @@ public class RunningRunFragment extends Fragment {
                         mCurPointGraphic.setVisible(true);
                         showLoctionAlways = true;
                         layoutOfClearPoints.setVisibility(View.GONE);
-                        GetShortestRoute();
+                        GetShortestRouteByStopPoints(true);
                     }
                     else if(mFragmentStatus == fragmentStatus.RoutingByDistance)
                     {
@@ -671,6 +844,68 @@ public class RunningRunFragment extends Fragment {
             });
         }
 
+        SwitchCompat lamp_switch = (SwitchCompat)view.findViewById(R.id.show_lamp_switch);
+        {
+            lamp_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(b)
+                    {
+                        if(userPosition != null)
+                            mMapView.setViewpointCenterAsync(userPosition);
+                        mRoadlampsFeatureCollectionLayer.setVisible(true);
+                    }
+                    else
+                    {
+                        mRoadlampsFeatureCollectionLayer.setVisible(false);
+                    }
+                }
+            });
+        }
+
+        SwitchCompat interest_view_switch = (SwitchCompat)view.findViewById(R.id.interest_view_switch);
+        {
+            interest_view_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(b)
+                    {
+                        if(userPosition != null)
+                            mMapView.setViewpointCenterAsync(userPosition);
+                        mInterestViewsFeatureCollectionLayer.setVisible(true);
+                    }
+                    else
+                        mInterestViewsFeatureCollectionLayer.setVisible(false);
+                }
+            });
+        }
+
+        SwitchCompat drink_switch = (SwitchCompat)view.findViewById(R.id.drink_switch);
+        {
+            drink_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if(b)
+                    {
+                        if(userPosition == null)
+                        {
+                            ShowToast("无法定位您到当前的位置", Toast.LENGTH_SHORT);
+                            return;
+                        }
+                        else
+                        {
+                            mMapView.setViewpointCenterAsync(userPosition);
+                            if(!haveGotRoute)
+                                ShowNearDrinks(userPosition, userPosition, 500);
+                        }
+                        mDrinkOverlay.setVisible(true);
+                    }
+                    else
+                        mDrinkOverlay.setVisible(false);
+                }
+            });
+        }
+
         mShowNearDrinksHanler = new android.os.Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -680,6 +915,8 @@ public class RunningRunFragment extends Fragment {
                     JSONTokener jsonParser = new JSONTokener(response);
                     JSONObject json = (JSONObject)jsonParser.nextValue();
                     JSONArray neardrinksArray = json.getJSONArray("neardrinks");
+                    mDrinkOverlay.getGraphics().clear();
+                    drinkList.clear();
                     for(int i=0;i<neardrinksArray.length();i++)
                     {
                         JSONObject tempDrink = (JSONObject) neardrinksArray.get(i);
@@ -702,6 +939,8 @@ public class RunningRunFragment extends Fragment {
                                 drinkList.add(di);
                                 Graphic g = new Graphic(new Point(drinkLng, drinkLat, SpatialReferences.getWgs84()), pictureMarkerSymbol);
                                 mDrinkOverlay.getGraphics().add(g);
+                                SwitchCompat drink_switch = (SwitchCompat)getActivity().findViewById(R.id.drink_switch);
+                                drink_switch.setChecked(true);
                             }
                         });
                     }
@@ -750,34 +989,85 @@ public class RunningRunFragment extends Fragment {
                     JSONTokener jsonParser = new JSONTokener(response);
                     JSONObject json = (JSONObject) jsonParser.nextValue();
                     JSONArray pointsArray = json.getJSONArray("RoadLamps");
+
+                    boolean roadlamp_Visible = mRoadlampsFeatureCollectionLayer.isVisible();
+                    if(roadlamp_Visible)
+                    {
+                        mRoadlampsFeatureCollectionLayer.setVisible(false);
+                        ShowToast("正在更新附近路灯信息", Toast.LENGTH_SHORT);
+                    }
+                    Iterator<Feature> featureIterator = mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX).iterator();
+                    Iterator<Feature> featureIterator_broken = mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_BROKEN_LAYER_INDEX).iterator();
+                    while (featureIterator.hasNext())
+                    {
+                        Feature feature = featureIterator.next();
+                        if(roadlampFeatureCollectionTable.canDelete(feature))
+                            roadlampFeatureCollectionTable.deleteFeatureAsync(feature);
+                    }
+                    while (featureIterator_broken.hasNext())
+                    {
+                        Feature feature = featureIterator_broken.next();
+                        if(roadlampBrokenFeatureCollectionTable.canDelete(feature))
+                            roadlampBrokenFeatureCollectionTable.deleteFeatureAsync(feature);
+                    }
+
+                    FeatureTable roadlampFeatureTable = mRoadlampsFeatureCollectionLayer.getFeatureCollection().getTables().get(ROADLAMP_LAYER_INDEX);
+
                     for(int i=0;i<pointsArray.length();i++)
                     {
                         JSONObject tempRoadLamp = (JSONObject) pointsArray.get(i);
-                        final double pointLng = tempRoadLamp.getDouble("Lng");
-                        final double pointLat = tempRoadLamp.getDouble("Lat");
-                        int status = tempRoadLamp.getInt("IsBroken");
-                        final boolean isBroken = (status == 0 ? false : true);
-                        final Point tempPoint = new Point(pointLng, pointLat, SpatialReferences.getWgs84());
-
-                        BitmapDrawable pinBitmap = null;
-                        if(isBroken)
-                            pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.roadlamp_broken);
+                        int lampStatus = tempRoadLamp.getInt("IsBroken");
+                        Feature tempFeature = roadlampFeatureTable.createFeature();
+                        {
+                            tempFeature.getAttributes().put("id", tempRoadLamp.getInt("ID"));
+                            tempFeature.getAttributes().put("lng", tempRoadLamp.getDouble("Lng"));
+                            tempFeature.getAttributes().put("lat", tempRoadLamp.getDouble("Lat"));
+                            tempFeature.getAttributes().put("isBroken", lampStatus == 0 ? "false" : "true");
+                            tempFeature.getAttributes().put("address", "武汉大学");
+                            tempFeature.getAttributes().put("onTime", "18:00");
+                            tempFeature.getAttributes().put("offTime", "05:00");
+                            tempFeature.setGeometry(new Point(tempRoadLamp.getDouble("Lng"), tempRoadLamp.getDouble("Lat"), SpatialReferences.getWgs84()));
+                        }
+                        if(lampStatus == 0)
+                            roadlampFeatureCollectionTable.addFeatureAsync(tempFeature);
                         else
-                            pinBitmap = (BitmapDrawable) ContextCompat.getDrawable(getContext(), R.drawable.roadlamp);
-                        final PictureMarkerSymbol pictureMarkerSymbol = new PictureMarkerSymbol(pinBitmap);
-                        pictureMarkerSymbol.setHeight(30);
-                        pictureMarkerSymbol.setWidth(30);
-                        pictureMarkerSymbol.setOffsetX(0);
-                        pictureMarkerSymbol.setOffsetY(15);
-                        pictureMarkerSymbol.loadAsync();
-                        pictureMarkerSymbol.addDoneLoadingListener(new Runnable() {
-                            @Override
-                            public void run() {
-                                roadlampList.add(tempPoint);
-                                Graphic g = new Graphic(tempPoint, pictureMarkerSymbol);
-                                mDrinkOverlay.getGraphics().add(g);
-                            }
-                        });
+                            roadlampBrokenFeatureCollectionTable.addFeatureAsync(tempFeature);
+                    }
+                    if(roadlamp_Visible)
+                        mRoadlampsFeatureCollectionLayer.setVisible(true);
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        mShowInterestViewsHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                try
+                {
+                    String response = ((Bundle)msg.getData()).getString("InterestViews");
+                    JSONTokener jsonParser = new JSONTokener(response);
+                    JSONObject json = (JSONObject) jsonParser.nextValue();
+                    JSONArray pointsArray = json.getJSONArray("InterestViews");
+
+                    FeatureTable roadlampFeatureTable = mInterestViewsFeatureCollectionLayer.getFeatureCollection().getTables().get(INTEREST_VIEWS_LAYER_INDEX);
+
+                    for(int i=0;i<pointsArray.length();i++)
+                    {
+                        JSONObject tempView = (JSONObject) pointsArray.get(i);
+                        Feature tempFeature = roadlampFeatureTable.createFeature();
+                        {
+                            tempFeature.getAttributes().put("lng", tempView.getDouble("Lng"));
+                            tempFeature.getAttributes().put("lat", tempView.getDouble("Lat"));
+                            tempFeature.getAttributes().put("name", tempView.getString("Name"));
+                            tempFeature.getAttributes().put("description", tempView.getString("Description"));
+                            tempFeature.getAttributes().put("imageName", tempView.getString("Picture"));
+                            tempFeature.setGeometry(new Point(tempView.getDouble("Lng"), tempView.getDouble("Lat"), SpatialReferences.getWgs84()));
+                        }
+                        mInterestViewsFeatureCollectionLayer.getFeatureCollection().getTables().get(INTEREST_VIEWS_LAYER_INDEX).addFeatureAsync(tempFeature);
                     }
                 }
                 catch (Exception ex)
@@ -787,8 +1077,33 @@ public class RunningRunFragment extends Fragment {
             }
         };
 
-        //显示路灯
-        ShowRoadLamps(new Point(-180, 90), new Point(180, -90));
+        mSetInterestViewSourceHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                try
+                {
+                    Bitmap bitmap = (Bitmap) msg.obj;
+                    if(bitmap != null)
+                        ((AppCompatImageView)getActivity().findViewById(R.id.view_image)).setImageBitmap(bitmap);
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        search_show_roadlamp_timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                //加载附近search_roadlamp_radius米内的路灯
+                if(userPosition != null)
+                    ShowNearRoadLamps(userPosition, userPosition, SEARCH_ROADLAMP_RADIUS);
+            }
+        }, 0, SEARCH_SHOW_ROADLAMP_TIMER_PERIOD);
+
+        //加载景点
+        ShowInterestViews(new Point(-180, 90), new Point(180, -90));
 
         return view;
     }
@@ -948,7 +1263,7 @@ public class RunningRunFragment extends Fragment {
         }
     }
 
-    private void GetShortestRoute()
+    private void GetShortestRouteByStopPoints(final boolean isCircle)
     {
         Thread t = new Thread(new Runnable() {
             @Override
@@ -977,7 +1292,10 @@ public class RunningRunFragment extends Fragment {
                 {
                     resultPooints.add(tempPoint);
                 }
-                resultPooints.add((Point)GeometryEngine.project(userPosition, SpatialReferences.getWgs84()));
+                if(isCircle)
+                    resultPooints.add((Point)GeometryEngine.project(userPosition, SpatialReferences.getWgs84()));
+                else
+                    resultPooints.add((Point)GeometryEngine.project(stops.get(stops.size() - 1), SpatialReferences.getWgs84()));
                 planningRoute = resultPooints;
 
                 DrawRoute(resultPooints, new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.argb(255, 0, 16, 233), 3));
@@ -1000,7 +1318,7 @@ public class RunningRunFragment extends Fragment {
                     else if(templat > maxLat)
                         maxLat = templat;
                 }
-                ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()));
+                ShowNearDrinks(new Point(minLng, maxLat, SpatialReferences.getWgs84()), new Point(maxLng, minLat, SpatialReferences.getWgs84()), 200);
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -1079,18 +1397,21 @@ public class RunningRunFragment extends Fragment {
                 planningRoute.clear();
                 startTimeMiliseconds = 0;
                 endTimeMiliseconds = 0;
+                ((SwitchCompat)getActivity().findViewById(R.id.show_lamp_switch)).setChecked(false);
+                ((SwitchCompat)getActivity().findViewById(R.id.drink_switch)).setChecked(false);
+                ((SwitchCompat)getActivity().findViewById(R.id.interest_view_switch)).setChecked(false);
             }
         });
     }
 
-    private void ShowNearDrinks(Point leftTop, Point rightBottom)
+    private void ShowNearDrinks(Point leftTop, Point rightBottom, double tolerance)
     {
         Point leftTopMkt = (Point)GeometryEngine.project(leftTop, SpatialReferences.getWebMercator());
         Point rightBottomMkt = (Point)GeometryEngine.project(rightBottom, SpatialReferences.getWebMercator());
-        final double minLngMkt = leftTopMkt.getX() - 200;
-        final double maxLngMkt = rightBottomMkt.getX() + 200;
-        final double minLatMkt = rightBottomMkt.getY() - 200;
-        final double maxLatMkt = leftTopMkt.getY() + 200;
+        final double minLngMkt = leftTopMkt.getX() - tolerance;
+        final double maxLngMkt = rightBottomMkt.getX() + tolerance;
+        final double minLatMkt = rightBottomMkt.getY() - tolerance;
+        final double maxLatMkt = leftTopMkt.getY() + tolerance;
 
         Point leftTopOpt = (Point)GeometryEngine.project(new Point(minLngMkt, maxLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
         Point rightBottomMktOpt = (Point)GeometryEngine.project(new Point(maxLngMkt, minLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
@@ -1128,18 +1449,28 @@ public class RunningRunFragment extends Fragment {
         showNearDrinkThread.start();
     }
 
-    public void ShowRoadLamps(Point leftTop, Point rightBottom)
+    public void ShowNearRoadLamps(Point leftTop, Point rightBottom, double tolerance)
     {
-        final double minLng = leftTop.getX();
-        final double maxLng = rightBottom.getX();
-        final double minLat = rightBottom.getY();
-        final double maxLat = leftTop.getY();
+        Point leftTopMkt = (Point)GeometryEngine.project(leftTop, SpatialReferences.getWebMercator());
+        Point rightBottomMkt = (Point)GeometryEngine.project(rightBottom, SpatialReferences.getWebMercator());
+        final double minLngMkt = leftTopMkt.getX() - tolerance;
+        final double maxLngMkt = rightBottomMkt.getX() + tolerance;
+        final double minLatMkt = rightBottomMkt.getY() - tolerance;
+        final double maxLatMkt = leftTopMkt.getY() + tolerance;
+
+        Point leftTopOpt = (Point)GeometryEngine.project(new Point(minLngMkt, maxLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
+        Point rightBottomMktOpt = (Point)GeometryEngine.project(new Point(maxLngMkt, minLatMkt, SpatialReferences.getWebMercator()), SpatialReferences.getWgs84());
+
+        final double minLng = leftTopOpt.getX();
+        final double maxLng = rightBottomMktOpt.getX();
+        final double minLat = rightBottomMktOpt.getY();
+        final double maxLat = leftTopOpt.getY();
         Thread showNearDrinkThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try
                 {
-                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.roadlamps) + "?minLng=" + minLng +  "&maxLng=" + maxLng + "&minLat=" + minLat + "&maxLat=" + maxLat);
+                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_roadlamps) + "?minLng=" + minLng +  "&maxLng=" + maxLng + "&minLat=" + minLat + "&maxLat=" + maxLat);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
                     connection.setConnectTimeout(10000);
@@ -1159,6 +1490,230 @@ public class RunningRunFragment extends Fragment {
             }
         });
         showNearDrinkThread.start();
+    }
+
+    public void ShowInterestViews(Point leftTop, Point rightBottom)
+    {
+        final double minLng = leftTop.getX();
+        final double maxLng = rightBottom.getX();
+        final double minLat = rightBottom.getY();
+        final double maxLat = leftTop.getY();
+        Thread showInterestViewsThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+                    URL url = new URL(getString(R.string.webapi_host) + getString(R.string.webapi_root) + getString(R.string.webapi_get_interest_views) + "?minLng=" + minLng +  "&maxLng=" + maxLng + "&minLat=" + minLat + "&maxLat=" + maxLat);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(10000);
+                    connection.setReadTimeout(4000);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String content = reader.readLine();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("InterestViews", content);
+                    Message message = new Message();
+                    message.setData(bundle);
+                    mShowInterestViewsHandler.sendMessage(message);
+                }
+                catch (Exception e)
+                {
+                    ShowToast("获取景点信息失败", Toast.LENGTH_SHORT);
+                }
+            }
+        });
+        showInterestViewsThread.start();
+    }
+
+    /*
+    * return:如果路灯要素图层可见且选中要素则返回true，否则返回false
+    * */
+    public boolean ShowRoadLampInfo(Point clickPoint)
+    {
+        if(mRoadlampsFeatureCollectionLayer.isVisible())
+        {
+            double mapTolerance = 15 * mMapView.getUnitsPerDensityIndependentPixel();
+            Envelope envelope = new Envelope(clickPoint.getX() - mapTolerance, clickPoint.getY() - mapTolerance, clickPoint.getX() + mapTolerance, clickPoint.getY() + mapTolerance, mArcGISMap.getSpatialReference());
+            QueryParameters query = new QueryParameters();
+            query.setGeometry(envelope);
+            final ListenableFuture<FeatureQueryResult> feature = mRoadlampsFeatureCollectionLayer.getLayers().get(ROADLAMP_LAYER_INDEX).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
+            feature.addDoneListener(new Runnable() {
+                @Override
+                public void run() {
+                    try
+                    {
+                        FeatureQueryResult result = feature.get();
+                        Iterator<Feature> iterator = result.iterator();
+                        while (iterator.hasNext()) {
+                            final Feature feature = iterator.next();
+                            final Callout callout = mMapView.getCallout();
+                            callout.setLocation((Point) feature.getGeometry());
+                            callout.setStyle(new Callout.Style(getContext(), R.xml.calloutstyle));
+                            View calloutView = getActivity().getLayoutInflater().inflate(R.layout.show_lamp_info_layout, null);
+                            ((TextView) calloutView.findViewById(R.id.lamp_address)).setText("位置：" + (String) feature.getAttributes().get("address"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_is_broken)).setText("是否损坏：否");
+                            ((TextView) calloutView.findViewById(R.id.lamp_on_time)).setText("开灯时间：" + (String) feature.getAttributes().get("onTime"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_off_time)).setText("关灯时间：" + (String) feature.getAttributes().get("offTime"));
+                            ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    callout.dismiss();
+                                }
+                            });
+                            callout.setContent(calloutView);
+                            callout.show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            final ListenableFuture<FeatureQueryResult> feature_brokenlamp = mRoadlampsFeatureCollectionLayer.getLayers().get(ROADLAMP_BROKEN_LAYER_INDEX).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
+            feature.addDoneListener(new Runnable() {
+                @Override
+                public void run() {
+                    try
+                    {
+                        FeatureQueryResult result = feature_brokenlamp.get();
+                        Iterator<Feature> iterator = result.iterator();
+                        while (iterator.hasNext()) {
+                            final Feature feature = iterator.next();
+                            final Callout callout = mMapView.getCallout();
+                            callout.setLocation((Point) feature.getGeometry());
+                            callout.setStyle(new Callout.Style(getContext(), R.xml.calloutstyle));
+                            View calloutView = getActivity().getLayoutInflater().inflate(R.layout.show_lamp_info_layout, null);
+                            ((TextView) calloutView.findViewById(R.id.lamp_address)).setText("位置：" + (String) feature.getAttributes().get("address"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_is_broken)).setText("是否损坏：是");
+                            ((TextView) calloutView.findViewById(R.id.lamp_on_time)).setText("开灯时间：" + (String) feature.getAttributes().get("onTime"));
+                            ((TextView) calloutView.findViewById(R.id.lamp_off_time)).setText("关灯时间：" + (String) feature.getAttributes().get("offTime"));
+                            ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    callout.dismiss();
+                                }
+                            });
+                            callout.setContent(calloutView);
+                            callout.show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /*
+    * return:如果景点要素图层可见则返回true，否则返回false
+    * */
+    public boolean ShowInterestViewsInfo(final Point clickPoint)
+    {
+        if(mInterestViewsFeatureCollectionLayer.isVisible())
+        {
+            double mapTolerance = 15 * mMapView.getUnitsPerDensityIndependentPixel();
+            Envelope envelope = new Envelope(clickPoint.getX() - mapTolerance, clickPoint.getY() - mapTolerance, clickPoint.getX() + mapTolerance, clickPoint.getY() + mapTolerance, mArcGISMap.getSpatialReference());
+            QueryParameters query = new QueryParameters();
+            query.setGeometry(envelope);
+            final ListenableFuture<FeatureQueryResult> feature = mInterestViewsFeatureCollectionLayer.getLayers().get(INTEREST_VIEWS_LAYER_INDEX).selectFeaturesAsync(query, FeatureLayer.SelectionMode.NEW);
+            feature.addDoneListener(new Runnable() {
+                @Override
+                public void run() {
+                    try
+                    {
+                        FeatureQueryResult result = feature.get();
+                        Iterator<Feature> iterator = result.iterator();
+                        while (iterator.hasNext()) {
+                            final Feature feature = iterator.next();
+                            final Callout callout = mMapView.getCallout();
+                            callout.setLocation((Point) feature.getGeometry());
+                            callout.setStyle(new Callout.Style(getContext(), R.xml.calloutstyle));
+                            View calloutView = getActivity().getLayoutInflater().inflate(R.layout.show_interest_views_layers, null);
+                            final String imageUrlPath = getString(R.string.webapi_host) + getString(R.string.webapi_image_path);
+//                            ImageManagerImpl.registerInstance();
+//                            x.image().bind((AppCompatImageView)calloutView.findViewById(R.id.view_image), imageUrl, ImageOptions.DEFAULT);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Message msg = mSetInterestViewSourceHandler.obtainMessage();
+                                    msg.obj = DownLoadImageFromNet(imageUrlPath, (String) feature.getAttributes().get("imageName"));
+                                    msg.what =0;
+                                    mSetInterestViewSourceHandler.sendMessage(msg);
+                                }
+                            }).start();
+                            ((TextView) calloutView.findViewById(R.id.view_name)).setText("景点名称：" + (String) feature.getAttributes().get("name"));
+                            ((TextView) calloutView.findViewById(R.id.view_description)).setText("景点简介：" + (String) feature.getAttributes().get("description"));
+                            ((Button) calloutView.findViewById(R.id.callout_close)).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    callout.dismiss();
+                                }
+                            });
+                            ((Button) calloutView.findViewById(R.id.near_people_call_it)).setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    callout.dismiss();
+                                    InitFragment();
+                                    if(userPosition == null)
+                                    {
+                                        ShowToast("无法定位您到当前的位置", Toast.LENGTH_SHORT);
+                                        return;
+                                    }
+                                    layoutOfRoutingButton.setVisibility(View.GONE);
+                                    layoutOfStartButton.setVisibility(View.VISIBLE);
+                                    layoutOfClearPoints.setVisibility(View.VISIBLE);
+                                    layoutOfReturnInit.setVisibility(View.VISIBLE);
+                                    mFragmentStatus = fragmentStatus.RoutingByStops_Unstart;
+                                    stopPointsForShortestRoute.clear();
+                                    mMapView.setViewpointCenterAsync(userPosition);
+                                    mCurPointGraphic.setGeometry(userPosition);
+                                    mCurPointGraphic.setVisible(true);
+                                    btnStart.setEnabled(true);
+
+                                    mFragmentStatus = fragmentStatus.RoutingByStops;
+                                    layoutOfReturnInit.setVisibility(View.GONE);
+                                    btnStart.setText("获取路径...");
+                                    btnStart.setEnabled(false);
+                                    showLoctionAlways = false;
+                                    mCurPointGraphic.setVisible(true);
+                                    showLoctionAlways = true;
+                                    layoutOfClearPoints.setVisibility(View.GONE);
+
+                                    stopPointsForShortestRoute.add(userPosition);
+                                    stopPointsForShortestRoute.add(clickPoint);
+                                    GetShortestRouteByStopPoints(false);
+                                    DrawPoint(userPosition, R.drawable.start, 22, 33, 0, (float)13.5);
+                                    DrawPoint(clickPoint, R.drawable.terminal, 22, 33, 0, (float)13.5);
+
+                                }
+                            });
+                            callout.setContent(calloutView);
+                            callout.show();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private JSONObject GenerateRouteJson(int userId, ArrayList<Point> pointsList, double distanceOfRoute, double distanceOfUserRunning, long during)
@@ -1197,7 +1752,7 @@ public class RunningRunFragment extends Fragment {
     {
         if(distanceOfRoute < 200)
         {
-            ShowToast("本次跑步距离过短，将不上传数据库", Toast.LENGTH_SHORT);
+            ShowToast("本次跑步距离过短，将不上传服务器", Toast.LENGTH_SHORT);
             return false;
         }
         final int userId = id;
@@ -1243,4 +1798,32 @@ public class RunningRunFragment extends Fragment {
         }).start();
         return true;
     }
+
+    public static Bitmap DownLoadImageFromNet(String UrlPath, String UrlName)
+    {
+        Bitmap bitmap = null;
+        InputStream inputStream;
+        try {
+            URL url = new URL(UrlPath + URLEncoder.encode(UrlName, "UTF-8"));
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            {
+                httpURLConnection.setRequestProperty("contentType", "GBK");
+                httpURLConnection.setConnectTimeout(10000);
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.setReadTimeout(10000);
+            }
+            int requestCode = httpURLConnection.getResponseCode();
+            if(requestCode == 200)
+            {
+                inputStream = httpURLConnection.getInputStream();
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        return bitmap;
+    }
+
 }

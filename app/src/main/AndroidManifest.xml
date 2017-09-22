@@ -31,13 +31,6 @@
             android:label="Running" />
         <activity android:name=".NightRunActivity">
 
-            <!-- <intent-filter> -->
-
-
-            <!-- <action android:name="android.intent.action." /> -->
-
-
-            <!-- </intent-filter> -->
 
         </activity>
         <activity android:name=".run_competition" />

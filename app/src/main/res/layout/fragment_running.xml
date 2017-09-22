@@ -11,7 +11,6 @@
         android:layout_height="fill_parent"
         android:visibility="visible" />
 
-
     <LinearLayout
         android:id="@+id/layout_routing"
         android:layout_width="match_parent"
@@ -200,28 +199,44 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_view"
-            android:layout_width="160dp"
-            android:layout_height="35dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/button_db"
-            android:text="显示风景夜跑路线"
-            android:textColor="@color/white"
-            android:textStyle="bold" />
-
-        <RadioButton
-            android:id="@+id/showLight"
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/show_lamp_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="100dp"
-            android:layout_marginTop="20dp"
-            android:text="路灯"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="50dp"
+            android:text="附近路灯"
+            android:textColor="@color/colorPrimary"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_gravity="right" />
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/drink_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="15dp"
+            android:text="附近饮品店"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_gravity="right" />
+
+        <android.support.v7.widget.SwitchCompat
+            android:id="@+id/interest_view_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="15dp"
+            android:text="附近景点"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_gravity="right" />
     </LinearLayout>
 
 </FrameLayout>

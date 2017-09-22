@@ -39,11 +39,13 @@
     <string name="webapi_login">login/</string>
     <string name="webapi_nearpeople">nearpeople/</string>
     <string name="webapi_neardrinks">neardrinks/</string>
-    <string name="roadlamps">roadlamps/</string>
+    <string name="webapi_roadlamps">roadlamps/</string>
+    <string name="webapi_get_interest_views">getinterestviews/</string>
     <string name="webapi_checkrunninginfo">checkrunninginfo/</string>
     <string name="webapi_routestops">routestops/</string>
     <string name="webapi_add_running_info">addrunninginfo/</string>
     <string name="webapi_nearpeoplecall">nearpeoplecall/</string>
+    <string name="webapi_image_path">imgs/</string>
     <string name="webapi_gym_info">gyminfo/</string>
     <string name="title_activity_login">登录</string>
 
