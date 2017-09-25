@@ -55,4 +55,6 @@
     <string name="title_activity_register">Register</string>
     <string name="title_activity_register_new">Register_new</string>
     <string name="title_activity_out_men_register">OutMenRegister</string>
+    <string name="title_activity_shuoshuo">ShuoshuoActivity</string>
+    <string name="static_resource_url_root">http://139.129.166.245:4521/</string>
 </resources>

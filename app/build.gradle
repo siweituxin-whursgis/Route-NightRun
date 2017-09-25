@@ -38,4 +38,5 @@ dependencies {
     compile 'com.esri.arcgisruntime:arcgis-android:100.1.0'
     compile 'com.android.support:design:23.4.0'
     testCompile 'junit:junit:4.12'
+    compile project(':chat')
 }
