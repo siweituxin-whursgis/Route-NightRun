@@ -1,7 +1,6 @@
 package com.example.huyigong.route_nightrun;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -40,15 +39,10 @@ import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
-import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
-import com.example.huyigong.route_nightrun.Substances.NightRunner;
-import com.example.huyigong.route_nightrun.Substances.NightRunnersInfo;
+import com.example.huyigong.route_nightrun.substances.NightRunner;
+import com.example.huyigong.route_nightrun.substances.NightRunnersInfo;
 import com.google.gson.Gson;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

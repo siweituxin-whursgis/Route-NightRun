@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/shuoshuo_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/shuoshuo_user_image"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="5dp"/>
+
+        <TextView
+            android:id="@+id/shuoshuo_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/shuoshuo_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <ImageView
+            android:id="@+id/shuoshuo_content_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/shuoshuo_tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right">
+
+        <ToggleButton
+            android:id="@+id/shuoshuo_tools_thumb"
+            style="@android:style/Widget.Material.Button.Borderless.Small"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:checked="false"
+            android:textOff=""
+            android:textOn=""
+            android:drawableStart="@drawable/good_button_icon_selector"
+            android:padding="0dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
