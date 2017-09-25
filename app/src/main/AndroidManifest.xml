@@ -22,7 +22,12 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".WeatherActivity"
-            android:label="夜跑小助手">
+            android:label="夜跑小助手" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".Night_Running"
@@ -32,9 +37,7 @@
             android:label="Running" />
         <activity android:name=".NightRunActivity">
 
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action." /> -->
-            <!-- </intent-filter> -->
+
         </activity>
         <activity android:name=".run_competition" />
         <activity android:name=".Calculate_KM" />
@@ -54,6 +57,7 @@
 
         <activity
             android:name=".LoginActivity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
             android:label="夜跑小助手">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,7 +67,28 @@
         <activity android:name=".GymInfoActivity" />
         <activity android:name=".Call_Taxi" />
         <activity android:name=".taxi_coming" />
-        <activity android:name=".SearchNearPeopleActivity"/>
+        <activity android:name=".SearchNearPeopleActivity" />
+        <activity
+            android:name=".Register"
+            android:label="@string/title_activity_register"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Register_new"
+            android:label="@string/title_activity_register_new"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".Register_choose" />
+        <activity
+            android:name=".OutMenRegister"
+            android:label="@string/title_activity_out_men_register"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Before_Login"
+            android:label="夜跑小助手"
+            android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
+        <activity android:name=".forum"
+            android:label="跑友秀"></activity>
     </application>
 
 </manifest>

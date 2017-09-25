@@ -9,8 +9,10 @@
 
     <com.esri.arcgisruntime.mapping.view.MapView
         android:id="@+id/talk_map_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="344dp"
+        android:layout_height="506dp"
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp">
     </com.esri.arcgisruntime.mapping.view.MapView>
 
 </android.support.constraint.ConstraintLayout>

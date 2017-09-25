@@ -12,6 +12,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -53,8 +54,27 @@ public class NightRunActivity extends AppCompatActivity {
         tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
             @Override
             public void onTabChanged(String s) {
-                if(s == "run" && !haveGotParam && false)
+                if(false)
+                    return;
+                if(s == "run")
                 {
+                    findViewById(R.id.mapView1).setVisibility(View.VISIBLE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.GONE);
+                }
+                else if(s == "talk")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.GONE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.VISIBLE);
+                }
+                else if(s == "estimate")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.GONE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.GONE);
+                }
+                else if(s == "safe")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.GONE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.GONE);
                 }
             }
         });

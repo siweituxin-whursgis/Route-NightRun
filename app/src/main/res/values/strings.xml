@@ -39,10 +39,13 @@
     <string name="webapi_login">login/</string>
     <string name="webapi_nearpeople">nearpeople/</string>
     <string name="webapi_neardrinks">neardrinks/</string>
+    <string name="webapi_roadlamps">roadlamps/</string>
+    <string name="webapi_get_interest_views">getinterestviews/</string>
     <string name="webapi_checkrunninginfo">checkrunninginfo/</string>
     <string name="webapi_routestops">routestops/</string>
     <string name="webapi_add_running_info">addrunninginfo/</string>
     <string name="webapi_nearpeoplecall">nearpeoplecall/</string>
+    <string name="webapi_image_path">imgs/</string>
     <string name="webapi_gym_info">gyminfo/</string>
     <string name="title_activity_login">登录</string>
 
@@ -52,4 +55,8 @@
     <string name="gym_callout_call_text">电话：</string>
 
     <string name="graphhopper_api_key">"f8821850-c1f8-4f8f-befb-f976c887ebfb"</string>
+    <string name="title_activity_register">Register</string>
+    <string name="title_activity_register_new">Register_new</string>
+    <string name="title_activity_out_men_register">OutMenRegister</string>
+    <string name="title_activity_before__login">Before_Login</string>
 </resources>

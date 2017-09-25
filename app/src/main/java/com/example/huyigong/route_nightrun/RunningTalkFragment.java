@@ -261,7 +261,7 @@ public class RunningTalkFragment extends Fragment {
             Toast.makeText(getContext(), "未开启定位权限", Toast.LENGTH_SHORT).show();
         }
         // 显示控件
-        mMapView = (MapView) view.findViewById(R.id.talk_map_view);
+        mMapView = (MapView) view.findViewById(R.id.talk_map_view1);
         mMapView.getGraphicsOverlays().add(mGraphicsOverlay);
         mMapView.setMap(mArcGISMap);
         // 添加当前点
