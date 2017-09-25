@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.huyigong.route_nightrun">
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -19,16 +20,21 @@
         android:icon="@drawable/icon"
         android:label="夜跑小助手"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:replace="android:label">
+
         <activity
             android:name=".WeatherActivity"
             android:label="夜跑小助手" />
+
         <activity
             android:name=".Night_Running"
             android:label="Night Running" />
+
         <activity
             android:name=".RunningActivity"
             android:label="Running" />
+
         <activity android:name=".NightRunActivity">
 
             <!-- <intent-filter> -->
@@ -36,11 +42,17 @@
             <!-- </intent-filter> -->
         </activity>
         <activity android:name=".run_competition" />
+
         <activity android:name=".Calculate_KM" />
+
         <activity android:name=".enroll_marathon" />
+
         <activity android:name=".success_submit" />
+
         <activity android:name=".weight_management" />
+
         <activity android:name=".IndoorRunActivity" />
+
         <activity
             android:name=".AlertActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -55,28 +67,38 @@
             android:name=".LoginActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:label="夜跑小助手">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
         <activity android:name=".GymInfoActivity" />
+
         <activity android:name=".Call_Taxi" />
+
         <activity android:name=".taxi_coming" />
+
         <activity android:name=".SearchNearPeopleActivity" />
+
         <activity
             android:name=".Register"
             android:label="@string/title_activity_register"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".Register_new"
             android:label="@string/title_activity_register_new"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".Register_choose" />
+
         <activity
             android:name=".OutMenRegister"
             android:label="@string/title_activity_out_men_register"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".Before_Login"
             android:label="夜跑小助手"
@@ -86,6 +108,10 @@
         <activity
             android:name=".forum"
             android:label="跑友秀" />
+
+        <activity android:name=".MyChatActivity" />
+
+
     </application>
 
 </manifest>

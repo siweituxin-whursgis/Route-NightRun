@@ -1,4 +1,4 @@
-package com.example.huyigong.route_nightrun.Substances;
+package com.example.huyigong.route_nightrun.substances;
 
 /**
  * 夜跑用户查询结果

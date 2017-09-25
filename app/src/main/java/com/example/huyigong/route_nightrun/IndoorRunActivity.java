@@ -47,8 +47,8 @@ import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.Symbol;
-import com.example.huyigong.route_nightrun.Substances.Gym;
-import com.example.huyigong.route_nightrun.Substances.GymsInfo;
+import com.example.huyigong.route_nightrun.substances.Gym;
+import com.example.huyigong.route_nightrun.substances.GymsInfo;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;

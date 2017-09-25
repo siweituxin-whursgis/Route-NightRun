@@ -67,7 +67,7 @@ import com.esri.arcgisruntime.symbology.PictureMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.Symbol;
-import com.example.huyigong.route_nightrun.Substances.DrinksInfo;
+import com.example.huyigong.route_nightrun.substances.DrinksInfo;
 import com.example.huyigong.route_nightrun.helpers.CalculateGeometryApi;
 import com.example.huyigong.route_nightrun.helpers.RouteApi;
 

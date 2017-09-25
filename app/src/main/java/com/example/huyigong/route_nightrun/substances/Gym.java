@@ -1,4 +1,4 @@
-package com.example.huyigong.route_nightrun.Substances;
+package com.example.huyigong.route_nightrun.substances;
 
 import android.os.Parcel;
 import android.os.Parcelable;

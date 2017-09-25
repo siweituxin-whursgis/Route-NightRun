@@ -1,4 +1,4 @@
-package com.example.huyigong.route_nightrun.Substances;
+package com.example.huyigong.route_nightrun.substances;
 
 /**
  * Created by CS_Tao on 2017/8/7.

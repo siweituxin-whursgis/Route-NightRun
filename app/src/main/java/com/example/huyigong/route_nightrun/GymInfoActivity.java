@@ -12,10 +12,9 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.huyigong.route_nightrun.Substances.Gym;
-import com.example.huyigong.route_nightrun.Substances.GymsInfo;
+import com.example.huyigong.route_nightrun.substances.Gym;
+import com.example.huyigong.route_nightrun.substances.GymsInfo;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
