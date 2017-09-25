@@ -22,8 +22,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".WeatherActivity"
-            android:label="夜跑小助手">
-        </activity>
+            android:label="夜跑小助手" />
         <activity
             android:name=".Night_Running"
             android:label="Night Running" />
@@ -54,16 +53,30 @@
 
         <activity
             android:name=".LoginActivity"
-            android:label="夜跑小助手">
+            android:theme="@style/AppTheme.NoActionBar"  >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".GymInfoActivity" />
         <activity android:name=".Call_Taxi" />
         <activity android:name=".taxi_coming" />
-        <activity android:name=".SearchNearPeopleActivity"/>
+        <activity android:name=".SearchNearPeopleActivity" />
+        <activity
+            android:name=".Register"
+            android:label="@string/title_activity_register"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Register_new"
+            android:label="@string/title_activity_register_new"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".Register_choose" />
+        <activity
+            android:name=".OutMenRegister"
+            android:label="@string/title_activity_out_men_register"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

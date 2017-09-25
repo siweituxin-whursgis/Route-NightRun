@@ -52,4 +52,7 @@
     <string name="gym_callout_call_text">电话：</string>
 
     <string name="graphhopper_api_key">"f8821850-c1f8-4f8f-befb-f976c887ebfb"</string>
+    <string name="title_activity_register">Register</string>
+    <string name="title_activity_register_new">Register_new</string>
+    <string name="title_activity_out_men_register">OutMenRegister</string>
 </resources>
