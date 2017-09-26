@@ -2,6 +2,7 @@ package com.example.huyigong.route_nightrun;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.CalendarContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,9 +12,15 @@ import android.widget.TextView;
 
 import com.example.huyigong.route_nightrun.helpers.WeatherApi;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
 public class WeatherActivity extends AppCompatActivity {
     Button run_outside;
     Handler mWeatherHandler;
+
+    static String[] WEEK_NAME_STRING = {"日", "一", "二", "三", "四", "五", "六"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,5 +79,13 @@ public class WeatherActivity extends AppCompatActivity {
                 startActivity(gotoIndoorRunning);
             }
         });
+
+        // 修改日期
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int week = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        ((TextView) findViewById(R.id.date)).setText(String.valueOf(month) + "月" + String.valueOf(day) + "日" + " " + "星期" + WEEK_NAME_STRING[week]);
     }
 }

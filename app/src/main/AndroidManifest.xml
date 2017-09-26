@@ -111,6 +111,10 @@
 
         <activity android:name=".MyChatActivity" />
 
+        <activity
+            android:name=".ShuoshuoActivity"
+            android:label="夜跑论坛"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
     </application>
 

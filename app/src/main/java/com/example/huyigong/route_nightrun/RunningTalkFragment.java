@@ -348,9 +348,19 @@ public class RunningTalkFragment extends Fragment {
                 return super.onSingleTapConfirmed(e);
             }
         });
+        Button button = (Button) view.findViewById(R.id.friends_circle);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), ShuoshuoActivity.class);
+                getActivity().startActivity(intent);
+            }
+        });
 
         // 获取最近的人
         mNearPeopleTimer = new Timer();
+
+
         // 返回view
         return view;
     }
