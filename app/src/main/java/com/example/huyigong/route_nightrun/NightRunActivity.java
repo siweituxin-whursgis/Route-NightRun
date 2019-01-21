@@ -1,0 +1,102 @@
+package com.example.huyigong.route_nightrun;
+
+import android.app.AlertDialog;
+import android.app.LocalActivityManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTabHost;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.text.InputType;
+import android.view.Menu;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class NightRunActivity extends AppCompatActivity {
+
+    TabHost tabHost;
+
+    Context runContext = null;
+
+    FragmentManager fragmentManager = null;
+
+    boolean haveGotParam = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_night_run);
+        fragmentManager = getSupportFragmentManager();
+        // 添加TabHost标签
+        tabHost = (TabHost) findViewById(R.id.night_run_tabhost);
+        tabHost.setup();
+        // 创建视图
+        View view_estimate = createTabView("评估", R.drawable.tab_item_test_icon); // 评估
+        View view_run = createTabView("夜跑", R.drawable.tab_item_run_icon); // 夜跑
+        View view_talk = createTabView("约跑", R.drawable.tab_item_talk_icon); // 约跑
+        View view_safe = createTabView("报警", R.drawable.tab_item_safe_icon); // 报警
+
+
+
+        tabHost.addTab(tabHost.newTabSpec("estimate").setIndicator(view_estimate).setContent(R.id.fragment_running_estimate));
+        tabHost.addTab(tabHost.newTabSpec("run").setIndicator(view_run).setContent(R.id.fragment_running));
+        tabHost.addTab(tabHost.newTabSpec("talk").setIndicator(view_talk).setContent(R.id.fragment_talk));
+        tabHost.addTab(tabHost.newTabSpec("safe").setIndicator(view_safe).setContent(R.id.fragment_safe));
+        tabHost.getTabWidget().setStripEnabled(false);
+
+        runContext = view_run.getContext();
+        tabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+            @Override
+            public void onTabChanged(String s) {
+                if(false)
+                    return;
+                if(s == "run")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.VISIBLE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.GONE);
+                }
+                else if(s == "talk")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.GONE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.VISIBLE);
+                }
+                else if(s == "estimate")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.GONE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.GONE);
+                }
+                else if(s == "safe")
+                {
+                    findViewById(R.id.mapView1).setVisibility(View.GONE);
+                    findViewById(R.id.talk_map_view1).setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    /**
+     * 生成Tab标签
+     * @param title Tab标题
+     * @param drawableId 图标ID
+     * @return Tab视图
+     */
+    View createTabView(String title, int drawableId) {
+        View view = getLayoutInflater().inflate(R.layout.tab_item_layout, null);
+        TextView textView = (TextView) view.findViewById(R.id.tab_item_title);
+        textView.setText(title);
+        ImageView imageView = (ImageView) view.findViewById(R.id.tab_item_icon);
+        imageView.setBackground(getResources().getDrawable(drawableId, null));
+        return view;
+    }
+}

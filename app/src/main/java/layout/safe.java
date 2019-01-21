@@ -40,7 +40,7 @@ public class safe extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment safe.
+     * @return A new instance of fragment RunningSafeFragment.
      */
     // TODO: Rename and change types and number of parameters
     public static safe newInstance(String param1, String param2) {
